@@ -212,22 +212,14 @@ export default function Gobblet() {
       const vh = window.innerHeight;
       const vw = window.innerWidth;
 
-      const containerPadding = 12;
-      const headerHeight = 26;
-      const cpuStackHeight = 65;
-      const playerStackHeight = 65;
-      const messageHeight = 30;
-      const buttonsHeight = 32;
-      const gaps = 20;
-
-      const totalFixedHeight = containerPadding + headerHeight + cpuStackHeight + playerStackHeight + messageHeight + buttonsHeight + gaps;
+      const totalFixedHeight = 280;
       const availableForBoard = vh - totalFixedHeight;
       const maxCellFromHeight = (availableForBoard - 37) / 4;
 
       const availableWidth = vw - 32;
       const maxCellFromWidth = (availableWidth - 37) / 4;
 
-      const newCellSize = Math.min(Math.max(Math.min(maxCellFromHeight, maxCellFromWidth), 40), 72);
+      const newCellSize = Math.min(Math.max(Math.min(maxCellFromHeight, maxCellFromWidth), 38), 70);
       setCellSize(newCellSize);
     };
 
@@ -651,7 +643,7 @@ export default function Gobblet() {
           fontFamily: 'monospace',
           opacity: 0.6,
         }}>
-          v1.2.1
+          v1.2.2
         </div>
       </div>
     );
@@ -702,7 +694,7 @@ export default function Gobblet() {
             fontSize: '8px',
             fontFamily: 'monospace',
           }}>
-            v1.2.1
+            v1.2.2
           </span>
         </div>
       </div>
