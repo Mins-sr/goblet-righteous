@@ -127,14 +127,14 @@ const BoardCell = ({ cell, rowIndex, colIndex, onCellClick, canPlace, cellSize }
 };
 
 const StackArea = ({ stacks, owner, onStackClick, selectedPiece, isPlayerTurn, label, cellSize }) => {
-  const stackBoxSize = cellSize * 0.9;
+  const stackBoxSize = cellSize * 0.85;
 
   return (
     <div style={{
       display: 'flex',
       alignItems: 'center',
-      gap: '8px',
-      padding: '6px 10px',
+      gap: '6px',
+      padding: '5px 8px',
       background: 'linear-gradient(180deg, #5d4e37 0%, #4a3f2f 100%)',
       borderRadius: '10px',
       boxShadow: '0 4px 16px rgba(0,0,0,0.3)',
@@ -211,11 +211,22 @@ export default function Gobblet() {
     const updateSize = () => {
       const vh = window.innerHeight;
       const vw = window.innerWidth;
-      const availableHeight = vh - 330;
-      const availableWidth = vw - 40;
-      const maxCellFromHeight = availableHeight / 4.5;
-      const maxCellFromWidth = availableWidth / 4.5;
-      const newCellSize = Math.min(Math.max(Math.min(maxCellFromHeight, maxCellFromWidth), 50), 85);
+
+      const headerHeight = 24;
+      const cpuStackHeight = 60;
+      const playerStackHeight = 60;
+      const messageHeight = 28;
+      const buttonsHeight = 28;
+      const gaps = 20;
+
+      const totalFixedHeight = headerHeight + cpuStackHeight + playerStackHeight + messageHeight + buttonsHeight + gaps;
+      const availableForBoard = vh - totalFixedHeight;
+      const maxCellFromHeight = (availableForBoard - 37) / 4;
+
+      const availableWidth = vw - 32;
+      const maxCellFromWidth = (availableWidth - 37) / 4;
+
+      const newCellSize = Math.min(Math.max(Math.min(maxCellFromHeight, maxCellFromWidth), 42), 75);
       setCellSize(newCellSize);
     };
 
@@ -572,11 +583,12 @@ export default function Gobblet() {
         padding: '16px',
         boxSizing: 'border-box',
         overflow: 'hidden',
+        position: 'relative',
       }}>
         <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600;700&display=swap" rel="stylesheet" />
 
         <h1 style={{
-          fontSize: 'clamp(32px, 9vw, 52px)',
+          fontSize: 'clamp(28px, 8vw, 48px)',
           color: '#d4a574',
           textShadow: '0 4px 8px rgba(0,0,0,0.5), 0 0 40px rgba(212,165,116,0.3)',
           marginBottom: '12px',
@@ -587,8 +599,8 @@ export default function Gobblet() {
 
         <p style={{
           color: '#a89070',
-          fontSize: 'clamp(11px, 2.8vw, 15px)',
-          marginBottom: '32px',
+          fontSize: 'clamp(10px, 2.5vw, 14px)',
+          marginBottom: '24px',
           textAlign: 'center',
           maxWidth: '90%',
           lineHeight: '1.6',
@@ -612,8 +624,8 @@ export default function Gobblet() {
               key={key}
               onClick={() => startGame(key)}
               style={{
-                padding: '14px',
-                fontSize: '16px',
+                padding: '12px',
+                fontSize: '15px',
                 fontFamily: '"Cinzel", serif',
                 background: 'linear-gradient(180deg, #8b7355 0%, #6d5d47 100%)',
                 border: '2px solid #a89070',
@@ -627,6 +639,18 @@ export default function Gobblet() {
               {label}
             </button>
           ))}
+        </div>
+
+        <div style={{
+          position: 'absolute',
+          bottom: '10px',
+          right: '10px',
+          color: '#6d5d47',
+          fontSize: '9px',
+          fontFamily: 'monospace',
+          opacity: 0.6,
+        }}>
+          v1.2.0
         </div>
       </div>
     );
@@ -642,14 +666,13 @@ export default function Gobblet() {
       flexDirection: 'column',
       alignItems: 'center',
       justifyContent: 'space-between',
-      padding: '8px 8px',
+      padding: '6px 8px',
       fontFamily: '"Cinzel", Georgia, serif',
       boxSizing: 'border-box',
       overflow: 'hidden',
     }}>
       <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600;700&display=swap" rel="stylesheet" />
 
-      {/* Header */}
       <div style={{
         display: 'flex',
         alignItems: 'center',
@@ -658,7 +681,7 @@ export default function Gobblet() {
         maxWidth: `${boardSize + 40}px`,
       }}>
         <h1 style={{
-          fontSize: '18px',
+          fontSize: '16px',
           color: '#d4a574',
           textShadow: '0 2px 4px rgba(0,0,0,0.5)',
           letterSpacing: '2px',
@@ -666,15 +689,23 @@ export default function Gobblet() {
         }}>
           GOBBLET
         </h1>
-        <span style={{
-          color: '#a89070',
-          fontSize: '11px',
-        }}>
-          {difficulty === 'easy' ? '★' : difficulty === 'normal' ? '★★' : '★★★'}
-        </span>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+          <span style={{
+            color: '#a89070',
+            fontSize: '11px',
+          }}>
+            {difficulty === 'easy' ? '★' : difficulty === 'normal' ? '★★' : '★★★'}
+          </span>
+          <span style={{
+            color: '#6d5d47',
+            fontSize: '8px',
+            fontFamily: 'monospace',
+          }}>
+            v1.2.0
+          </span>
+        </div>
       </div>
 
-      {/* CPU Stack */}
       <StackArea
         stacks={stacks.cpu}
         owner="cpu"
@@ -685,9 +716,8 @@ export default function Gobblet() {
         cellSize={cellSize}
       />
 
-      {/* Board */}
       <div style={{
-        padding: '10px',
+        padding: '8px',
         background: 'linear-gradient(145deg, #6d5d47, #5d4e37)',
         borderRadius: '12px',
         boxShadow: '0 8px 24px rgba(0,0,0,0.5), inset 0 1px 2px rgba(255,255,255,0.1)',
@@ -696,7 +726,7 @@ export default function Gobblet() {
         <div style={{
           display: 'grid',
           gridTemplateColumns: `repeat(4, ${cellSize}px)`,
-          gap: '6px',
+          gap: '5px',
         }}>
           {board.map((row, rowIndex) =>
             row.map((cell, colIndex) => (
@@ -720,7 +750,6 @@ export default function Gobblet() {
         </div>
       </div>
 
-      {/* Player Stack */}
       <StackArea
         stacks={stacks.player}
         owner="player"
@@ -731,9 +760,8 @@ export default function Gobblet() {
         cellSize={cellSize}
       />
 
-      {/* Message */}
       <div style={{
-        padding: '8px 16px',
+        padding: '6px 14px',
         background: winner
           ? (winner === 'player' ? 'linear-gradient(180deg, #27ae60, #1e8449)' : 'linear-gradient(180deg, #e74c3c, #c0392b)')
           : 'linear-gradient(180deg, #5d4e37, #4a3f2f)',
@@ -742,7 +770,7 @@ export default function Gobblet() {
       }}>
         <p style={{
           color: '#f5e6d3',
-          fontSize: '13px',
+          fontSize: '11px',
           textAlign: 'center',
           margin: 0,
         }}>
@@ -750,16 +778,15 @@ export default function Gobblet() {
         </p>
       </div>
 
-      {/* Buttons */}
       <div style={{
         display: 'flex',
-        gap: '12px',
+        gap: '10px',
       }}>
         <button
           onClick={resetGame}
           style={{
-            padding: '8px 20px',
-            fontSize: '12px',
+            padding: '6px 16px',
+            fontSize: '11px',
             fontFamily: '"Cinzel", serif',
             background: 'linear-gradient(180deg, #8b7355 0%, #6d5d47 100%)',
             border: '2px solid #a89070',
@@ -774,8 +801,8 @@ export default function Gobblet() {
         <button
           onClick={() => setGameStarted(false)}
           style={{
-            padding: '8px 20px',
-            fontSize: '12px',
+            padding: '6px 16px',
+            fontSize: '11px',
             fontFamily: '"Cinzel", serif',
             background: 'linear-gradient(180deg, #5d4e37 0%, #4a3f2f 100%)',
             border: '2px solid #6d5d47',
