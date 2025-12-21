@@ -1,116 +1,116 @@
 # 🎮 Gobblet
 
-倧きな駒で盞手の駒を「食べる」こずができる戊略的な4目䞊べボヌドゲヌムです。ReactずGitHub Pagesで構築されおいたす。
+A strategic 4-in-a-row board game where you can "gobble" your opponent's pieces with larger ones. Built with React and deployed on GitHub Pages.
 
-**[🕹️ 今すぐプレむ](https://Mins-sr.github.io/goblet-righteous/)**
+**[🕹️ Play Now](https://Mins-sr.github.io/goblet-righteous/)**
 
 ![Version](https://img.shields.io/badge/version-1.2.1-blue)
 ![License](https://img.shields.io/badge/license-MIT-green)
 
 ---
 
-## 📖 プレむダヌ向け
+## 📖 For Players
 
-### 遊び方
+### How to Play
 
-**目的:** 自分の駒を瞊、暪、たたは斜めに4぀䞊べお勝利
+**Objective:** Get 4 of your pieces in a row (horizontally, vertically, or diagonally) to win!
 
-**ナニヌクな芁玠:** 倧きな駒で小さな駒を芆うこずができ、ボヌドの状態が動的に倉化したす。
+**Unique Twist:** Larger pieces can cover smaller pieces, changing the board state dynamically.
 
-### ゲヌムルヌル
+### Game Rules
 
-1. **セットアップ**
-   - 4×4のゲヌムボヌド
-   - 各プレむダヌは、サむズ1、2、3、4の駒が入った3぀のスタックを持぀
-   - あなたは赀、CPUは青
+1. **Setup**
+   - 4×4 game board
+   - Each player has 3 stacks with pieces of sizes 1, 2, 3, and 4
+   - You are RED, CPU is BLUE
 
-2. **あなたの手番**
-   - 自分のスタック䞋郚の駒をクリック たたは ボヌド䞊の自分の駒をクリック
-   - 空のマスをクリック たたは 自分より小さい駒のマスをクリックしお配眮・移動
-   - 自分より小さい駒だけを芆うこずができたす
+2. **Your Turn**
+   - Click a piece from your stack (bottom) OR click your piece on the board
+   - Click an empty cell OR a cell with a smaller piece to place/move
+   - You can only cover pieces smaller than yours
 
-3. **勝利条件**
-   - 自分の色の駒を4぀䞊べる
-   - 泚意: 駒を移動するず、その䞋に隠れおいた盞手の駒が珟れるこずがありたす
+3. **Win Conditions**
+   - Get 4 of your colored pieces in a row
+   - Be careful: moving a piece might reveal an opponent's piece underneath!
 
-4. **難易床レベル**
-   - **かんたん (★):** ランダムな手
-   - **ふ぀う (★★):** 戊略的評䟡
-   - **むずかしい (★★★):** ミニマックスアルゎリズムを䜿甚した高床なAI
+4. **Difficulty Levels**
+   - **Easy (★):** Random moves
+   - **Normal (★★):** Strategic evaluation
+   - **Hard (★★★):** Advanced AI with minimax algorithm
 
-### 操䜜方法
+### Controls
 
-- **タップ/クリック** - スタックから駒を遞択
-- **タップ/クリック** - ボヌド䞊の駒を移動
-- **タップ/クリック** - 有効なマスに遞択した駒を配眮
-- **Play Again** - 同じ難易床で再スタヌト
-- **Menu** - 難易床遞択画面に戻る
+- **Tap/Click** your stack to select a piece
+- **Tap/Click** a board piece to move it
+- **Tap/Click** a valid cell to place the selected piece
+- **Play Again** - Restart with same difficulty
+- **Menu** - Return to difficulty selection
 
 ---
 
-## 🛠️ 開発者向け
+## 🛠️ For Developers
 
-### クむックスタヌト
+### Quick Start
 
 ```bash
-# リポゞトリをクロヌン
+# Clone the repository
 git clone https://github.com/Mins-sr/goblet-righteous.git
 cd goblet-righteous
 
-# 䟝存関係をむンストヌル
+# Install dependencies
 npm install
 
-# 開発サヌバヌを起動
+# Start development server
 npm run dev
 
-# 本番ビルド
+# Build for production
 npm run build
 
-# 本番ビルドのプレビュヌ
+# Preview production build
 npm run preview
 ```
 
-### 技術スタック
+### Tech Stack
 
-- **フレヌムワヌク:** React 18
-- **ビルドツヌル:** Vite 7
-- **スタむリング:** Inline CSS-in-JS
-- **デプロむ:** GitHub Pages
+- **Framework:** React 18
+- **Build Tool:** Vite 7
+- **Styling:** Inline CSS-in-JS
+- **Deployment:** GitHub Pages
 - **CI/CD:** GitHub Actions
 
-### プロゞェクト構造
+### Project Structure
 
 ```
 goblet-righteous/
 ├── src/
-│   ├── Gobblet.jsx       # メむンゲヌムコンポヌネント
-│   ├── App.jsx           # Appラッパヌ
-│   ├── index.css         # グロヌバルスタむル
-│   └── main.jsx          # ゚ントリヌポむント
-├── public/               # 静的アセット
+│   ├── Gobblet.jsx       # Main game component
+│   ├── App.jsx           # App wrapper
+│   ├── index.css         # Global styles
+│   └── main.jsx          # Entry point
+├── public/               # Static assets
 ├── .github/
 │   └── workflows/
-│       └── deploy.yml    # 自動デプロむ蚭定
-├── vite.config.js        # Vite蚭定
-└── README.md             # このファむル
+│       └── deploy.yml    # Auto-deployment config
+├── vite.config.js        # Vite configuration
+└── README.md             # This file
 ```
 
-### 䞻芁なコンポヌネント
+### Key Components
 
 #### `Gobblet.jsx`
-以䞋を含むメむンゲヌムロゞック:
-- **Pieceコンポヌネント:** サむズに基づいたスタむリングのゲヌム駒
-- **BoardCellコンポヌネント:** 駒を重ねられる個別のボヌドマス
-- **StackAreaコンポヌネント:** プレむダヌ/CPUの駒の保管゚リア
-- **ゲヌム状態管理:** タヌン管理のためのReact Hooks
-- **AIロゞック:** CPU手のためのミニマックスアルゎリズム
+Main game logic including:
+- **Piece Component:** Rendered game pieces with size-based styling
+- **BoardCell Component:** Individual board cells with piece stacking
+- **StackArea Component:** Player/CPU piece reserves
+- **Game State Management:** React hooks for turn management
+- **AI Logic:** Minimax algorithm for CPU moves
 
-#### レスポンシブデザむン
+#### Responsive Design
 
-レむアりトは動的蚈算を䜿甚しお、すべおの芁玠を画面に収めたす:
+The layout uses dynamic calculation to fit all elements on screen:
 
 ```javascript
-// 高さ蚈算 (v1.2.1)
+// Height calculation (v1.2.1)
 const totalFixedHeight =
   containerPadding + headerHeight + cpuStackHeight +
   playerStackHeight + messageHeight + buttonsHeight + gaps;
@@ -119,173 +119,173 @@ const availableForBoard = vh - totalFixedHeight;
 const cellSize = (availableForBoard - 37) / 4;
 ```
 
-- **最小cellSize:** 40px (iPhone SE互換性)
-- **最倧cellSize:** 72px (最適なデスクトップ䜓隓)
+- **Min cellSize:** 40px (iPhone SE compatibility)
+- **Max cellSize:** 72px (optimal desktop experience)
 
-### 開発スクリプト
+### Development Scripts
 
 ```bash
-# ホットリロヌド付き開発サヌバヌを起動
+# Start dev server with hot reload
 npm run dev
 
-# 本番甚にビルド
+# Build for production
 npm run build
 
-# 本番ビルドをロヌカルでプレビュヌ
+# Preview production build locally
 npm run preview
 
-# コヌドをリント (蚭定されおいる堎合)
+# Lint code (if configured)
 npm run lint
 ```
 
-### デプロむメント
+### Deployment
 
-**自動デプロむ:**
-- `claude/deploy-gobblet-github-pages-SkeFm`ブランチにプッシュ
-- GitHub Actionsが自動的にビルドしおGitHub Pagesにデプロむ
-- 公開URL: https://Mins-sr.github.io/goblet-righteous/
+**Automatic Deployment:**
+- Push to `claude/deploy-gobblet-github-pages-SkeFm` branch
+- GitHub Actions automatically builds and deploys to GitHub Pages
+- Live URL: https://Mins-sr.github.io/goblet-righteous/
 
-**手動デプロむ:**
+**Manual Deployment:**
 
 ```bash
-# プロゞェクトをビルド
+# Build the project
 npm run build
 
-# GitHub Pagesにデプロむ (gh-pagesパッケヌゞを䜿甚する堎合)
+# Deploy to GitHub Pages (if using gh-pages package)
 npm run deploy
 ```
 
-### 蚭定
+### Configuration
 
-**Vite蚭定 (`vite.config.js`):**
+**Vite Config (`vite.config.js`):**
 ```javascript
 export default defineConfig({
   plugins: [react()],
-  base: '/goblet-righteous/',  // GitHub Pagesのベヌスパス
+  base: '/goblet-righteous/',  // GitHub Pages base path
 })
 ```
 
 **GitHub Actions (`deploy.yml`):**
-- デプロむブランチぞのプッシュでトリガヌ
-- `npm ci`ず`npm run build`でプロゞェクトをビルド
-- アヌティファクトをGitHub Pagesにアップロヌド
-- Pagesの自動有効化
+- Triggers on push to deployment branch
+- Builds project with `npm ci` and `npm run build`
+- Uploads artifacts to GitHub Pages
+- Automatic enablement of Pages
 
-### ブラりザサポヌト
+### Browser Support
 
-- ✅ Chrome/Edge (最新版)
-- ✅ Firefox (最新版)
-- ✅ Safari (最新版)
-- ✅ モバむルブラりザ (iOS Safari, Chrome Mobile)
+- ✅ Chrome/Edge (latest)
+- ✅ Firefox (latest)
+- ✅ Safari (latest)
+- ✅ Mobile browsers (iOS Safari, Chrome Mobile)
 
-**レスポンシブブレヌクポむント:**
-- iPhone SE (375×667) - 最小サポヌト
-- 暙準モバむル (最倧430×932)
-- タブレットずデスクトップ (自動スケヌル)
+**Responsive Breakpoints:**
+- iPhone SE (375×667) - minimum supported
+- Standard mobile (up to 430×932)
+- Tablets and desktop (auto-scales)
 
-### ゲヌムロゞック
+### Game Logic
 
-**AI実装:**
+**AI Implementation:**
 
-1. **かんたんモヌド:** ランダムな有効手の遞択
-2. **ふ぀うモヌド:** ボヌド評䟡ヒュヌリスティック
-3. **むずかしいモヌド:** アルファベヌタ枝刈り付きミニマックスアルゎリズム
-   - 深さ: 3レベル
-   - レベルごずに最倧20の最良手を評䟡
-   - 勝利怜出ずブロック
+1. **Easy Mode:** Random valid move selection
+2. **Normal Mode:** Board evaluation heuristics
+3. **Hard Mode:** Minimax algorithm with alpha-beta pruning
+   - Depth: 3 levels
+   - Evaluates up to 20 best moves per level
+   - Win detection and blocking
 
-**勝利条件チェック:**
+**Win Condition Check:**
 ```javascript
-// すべおの行、列、察角線をチェック
-// 同じ所有者の駒が4぀ (最䞊郚の駒のみ)
+// Checks all rows, columns, and diagonals
+// for 4 pieces of same owner (top pieces only)
 const checkWinner = (board) => {
-  // 行、列、察角線をチェック
-  // 'player'、'cpu'、たたはnullを返す
+  // Check rows, columns, diagonals
+  // Return 'player', 'cpu', or null
 }
 ```
 
-### 既知の問題
+### Known Issues
 
-レスポンシブデザむンの詳现なドキュメントに぀いおは[RESPONSIVE_DESIGN_ISSUE.md](./RESPONSIVE_DESIGN_ISSUE.md)を参照しおください。
+See [RESPONSIVE_DESIGN_ISSUE.md](./RESPONSIVE_DESIGN_ISSUE.md) for detailed responsive design documentation.
 
-**v1.2.1ステヌタス:**
-- ✅ モバむルでスクロヌル䞍芁
-- ✅ すべおのUI芁玠が衚瀺される
-- ✅ iPhone SE以䞊に最適化
+**v1.2.1 Status:**
+- ✅ No scrolling required on mobile
+- ✅ All UI elements visible
+- ✅ Optimized for iPhone SE and above
 
-### コントリビュヌト
+### Contributing
 
-1. リポゞトリをフォヌク
-2. 機胜ブランチを䜜成 (`git checkout -b feature/amazing-feature`)
-3. 倉曎をコミット (`git commit -m 'Add amazing feature'`)
-4. ブランチにプッシュ (`git push origin feature/amazing-feature`)
-5. プルリク゚ストを開く
+1. Fork the repository
+2. Create a feature branch (`git checkout -b feature/amazing-feature`)
+3. Commit your changes (`git commit -m 'Add amazing feature'`)
+4. Push to branch (`git push origin feature/amazing-feature`)
+5. Open a Pull Request
 
-### バヌゞョニング
+### Versioning
 
-**珟圚のバヌゞョン:** v1.2.1
+**Current Version:** v1.2.1
 
-**最近の曎新:**
-- v1.2.1 - モバむルデバむス甚レスポンシブレむアりト修正
-- v1.2.0 - バヌゞョン衚瀺ずレスポンシブデザむン远加
-- v1.1.0 - 英語ロヌカラむれヌションずモバむル最適化
-- v1.0.0 - AI実装を含む初回リリヌス
+**Recent Updates:**
+- v1.2.1 - Fixed responsive layout for mobile devices
+- v1.2.0 - Added version display and responsive design
+- v1.1.0 - English localization and mobile optimization
+- v1.0.0 - Initial release with AI implementation
 
-### テスト
+### Testing
 
-**手動テストチェックリスト:**
-- [ ] すべおの難易床でゲヌムが正しく開始される
-- [ ] 駒を遞択しお配眮できる
-- [ ] 倧きな駒が小さな駒を正しく芆う
-- [ ] 勝利条件が適切に怜出される
-- [ ] CPUが有効な手を打぀
-- [ ] モバむルでのレスポンシブレむアりト (スクロヌルなし)
-- [ ] "Play Again"ず"Menu"ボタンが機胜する
-- [ ] バヌゞョン番号が正しく衚瀺される
+**Manual Testing Checklist:**
+- [ ] Game starts correctly on all difficulty levels
+- [ ] Pieces can be selected and placed
+- [ ] Larger pieces cover smaller pieces correctly
+- [ ] Win conditions detected properly
+- [ ] CPU makes valid moves
+- [ ] Responsive layout on mobile (no scrolling)
+- [ ] "Play Again" and "Menu" buttons work
+- [ ] Version number displays correctly
 
-**テストデバむス:**
+**Test Devices:**
 - iPhone SE (375×667)
 - iPhone 12/13 (390×844)
 - iPhone 14 Pro Max (430×932)
-- デスクトップ (1920×1080以䞊)
+- Desktop (1920×1080+)
 
-### パフォヌマンス
+### Performance
 
-- **バンドルサむズ:** 玄206KB (gzip圧瞮: 玄65KB)
-- **初回ロヌド:** 3Gで1秒未満
-- **CPUタヌン遅延:** 800ms (より良いUXのため)
-- **AI蚈算:** むずかしいモヌドで500ms未満
+- **Bundle Size:** ~206KB (gzipped: ~65KB)
+- **Initial Load:** < 1s on 3G
+- **CPU Turn Delay:** 800ms (for better UX)
+- **AI Calculation:** < 500ms on hard mode
 
-### ラむセンス
+### License
 
-MITラむセンス - 孊習や個人䜿甚のために自由に䜿甚しおください。
+MIT License - feel free to use this project for learning or personal use.
 
-### クレゞット
+### Credits
 
-**ゲヌムデザむン:** クラシックなGobbletボヌドゲヌムに基づく
-**開発者:** Claude (Anthropic AI) ず人間のコラボレヌション
-**フォント:** Cinzel (Google Fonts)
-
----
-
-## 🐛 バグレポヌトず機胜リク゚スト
-
-バグを発芋したした アむデアはありたすか
-
-こちらでIssueを開いおください: [GitHub Issues](https://github.com/Mins-sr/goblet-righteous/issues)
+**Game Design:** Based on the classic Gobblet board game
+**Developer:** Claude (Anthropic AI) & Human collaboration
+**Font:** Cinzel (Google Fonts)
 
 ---
 
-## 📱 スクリヌンショット
+## 🐛 Bug Reports & Feature Requests
 
-*以䞋を瀺すスクリヌンショットを远加:*
-- 難易床遞択のあるタむトル画面
-- プレむ䞭のゲヌムボヌド
-- 勝利状態の衚瀺
-- モバむルレスポンシブレむアりト
+Found a bug? Have an idea?
+
+Open an issue at: [GitHub Issues](https://github.com/Mins-sr/goblet-righteous/issues)
 
 ---
 
-**React + Viteで❀を蟌めお䜜成**
+## 📱 Screenshots
 
-*最終曎新: v1.2.1*
+*Add screenshots here showing:*
+- Title screen with difficulty selection
+- Game board during play
+- Win state display
+- Mobile responsive layout
+
+---
+
+**Made with ❤️ using React + Vite**
+
+*Last Updated: v1.2.1*
