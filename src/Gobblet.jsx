@@ -134,7 +134,7 @@ const StackArea = ({ stacks, owner, onStackClick, selectedPiece, isPlayerTurn, l
       display: 'flex',
       alignItems: 'center',
       gap: '8px',
-      padding: '8px 12px',
+      padding: '6px 10px',
       background: 'linear-gradient(180deg, #5d4e37 0%, #4a3f2f 100%)',
       borderRadius: '10px',
       boxShadow: '0 4px 16px rgba(0,0,0,0.3)',
@@ -211,7 +211,7 @@ export default function Gobblet() {
     const updateSize = () => {
       const vh = window.innerHeight;
       const vw = window.innerWidth;
-      const availableHeight = vh - 280;
+      const availableHeight = vh - 330;
       const availableWidth = vw - 40;
       const maxCellFromHeight = availableHeight / 4.5;
       const maxCellFromWidth = availableWidth / 4.5;
@@ -230,7 +230,7 @@ export default function Gobblet() {
     setCurrentTurn('player');
     setSelectedPiece(null);
     setWinner(null);
-    setMessage('あなたの番です');
+    setMessage('Your turn');
   };
 
   const startGame = (diff) => {
@@ -437,7 +437,7 @@ export default function Gobblet() {
 
   useEffect(() => {
     if (currentTurn === 'cpu' && !winner && gameStarted) {
-      setMessage('CPUが考え䞭');
+      setMessage('CPU thinking...');
       const timer = setTimeout(() => {
         const move = getCpuMove();
         if (move) {
@@ -448,10 +448,10 @@ export default function Gobblet() {
           const gameWinner = checkWinner(newBoard);
           if (gameWinner) {
             setWinner(gameWinner);
-            setMessage(gameWinner === 'player' ? '🎉 あなたの勝ち' : '💻 CPUの勝ち');
+            setMessage(gameWinner === 'player' ? '🎉 You Win!' : '💻 CPU Wins');
           } else {
             setCurrentTurn('player');
-            setMessage('あなたの番です');
+            setMessage('Your turn');
           }
         }
       }, 800);
@@ -521,7 +521,7 @@ export default function Gobblet() {
               setStacks(newStacks);
               setSelectedPiece(null);
               setWinner('cpu');
-              setMessage('💻 CPUの勝ち');
+              setMessage('💻 CPU Wins');
               return;
             }
           }
@@ -534,7 +534,7 @@ export default function Gobblet() {
 
       if (potentialWinner) {
         setWinner(potentialWinner);
-        setMessage(potentialWinner === 'player' ? '🎉 あなたの勝ち' : '💻 CPUの勝ち');
+        setMessage(potentialWinner === 'player' ? '🎉 You Win!' : '💻 CPU Wins');
       } else {
         setCurrentTurn('cpu');
       }
@@ -576,7 +576,7 @@ export default function Gobblet() {
         <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600;700&display=swap" rel="stylesheet" />
 
         <h1 style={{
-          fontSize: 'clamp(36px, 10vw, 56px)',
+          fontSize: 'clamp(32px, 9vw, 52px)',
           color: '#d4a574',
           textShadow: '0 4px 8px rgba(0,0,0,0.5), 0 0 40px rgba(212,165,116,0.3)',
           marginBottom: '12px',
@@ -587,13 +587,13 @@ export default function Gobblet() {
 
         <p style={{
           color: '#a89070',
-          fontSize: 'clamp(12px, 3vw, 16px)',
+          fontSize: 'clamp(11px, 2.8vw, 15px)',
           marginBottom: '32px',
           textAlign: 'center',
           maxWidth: '90%',
           lineHeight: '1.6',
         }}>
-          4×4ボヌドで4目䞊べ。倧きい駒で被せられたす
+          4-in-a-row on 4×4 board. Cover with bigger pieces
         </p>
 
         <div style={{
@@ -604,16 +604,16 @@ export default function Gobblet() {
           maxWidth: '280px',
         }}>
           {[
-            { key: 'easy', label: 'かんたん' },
-            { key: 'normal', label: 'ふ぀う' },
-            { key: 'hard', label: 'むずかしい' }
+            { key: 'easy', label: 'Easy' },
+            { key: 'normal', label: 'Normal' },
+            { key: 'hard', label: 'Hard' }
           ].map(({ key, label }) => (
             <button
               key={key}
               onClick={() => startGame(key)}
               style={{
-                padding: '16px',
-                fontSize: '18px',
+                padding: '14px',
+                fontSize: '16px',
                 fontFamily: '"Cinzel", serif',
                 background: 'linear-gradient(180deg, #8b7355 0%, #6d5d47 100%)',
                 border: '2px solid #a89070',
@@ -642,7 +642,7 @@ export default function Gobblet() {
       flexDirection: 'column',
       alignItems: 'center',
       justifyContent: 'space-between',
-      padding: '12px 8px',
+      padding: '8px 8px',
       fontFamily: '"Cinzel", Georgia, serif',
       boxSizing: 'border-box',
       overflow: 'hidden',
@@ -658,7 +658,7 @@ export default function Gobblet() {
         maxWidth: `${boardSize + 40}px`,
       }}>
         <h1 style={{
-          fontSize: '20px',
+          fontSize: '18px',
           color: '#d4a574',
           textShadow: '0 2px 4px rgba(0,0,0,0.5)',
           letterSpacing: '2px',
@@ -733,7 +733,7 @@ export default function Gobblet() {
 
       {/* Message */}
       <div style={{
-        padding: '10px 20px',
+        padding: '8px 16px',
         background: winner
           ? (winner === 'player' ? 'linear-gradient(180deg, #27ae60, #1e8449)' : 'linear-gradient(180deg, #e74c3c, #c0392b)')
           : 'linear-gradient(180deg, #5d4e37, #4a3f2f)',
@@ -742,7 +742,7 @@ export default function Gobblet() {
       }}>
         <p style={{
           color: '#f5e6d3',
-          fontSize: '14px',
+          fontSize: '13px',
           textAlign: 'center',
           margin: 0,
         }}>
@@ -758,8 +758,8 @@ export default function Gobblet() {
         <button
           onClick={resetGame}
           style={{
-            padding: '10px 24px',
-            fontSize: '13px',
+            padding: '8px 20px',
+            fontSize: '12px',
             fontFamily: '"Cinzel", serif',
             background: 'linear-gradient(180deg, #8b7355 0%, #6d5d47 100%)',
             border: '2px solid #a89070',
@@ -768,14 +768,14 @@ export default function Gobblet() {
             cursor: 'pointer',
           }}
         >
-          もう䞀床
+          Play Again
         </button>
 
         <button
           onClick={() => setGameStarted(false)}
           style={{
-            padding: '10px 24px',
-            fontSize: '13px',
+            padding: '8px 20px',
+            fontSize: '12px',
             fontFamily: '"Cinzel", serif',
             background: 'linear-gradient(180deg, #5d4e37 0%, #4a3f2f 100%)',
             border: '2px solid #6d5d47',
@@ -784,7 +784,7 @@ export default function Gobblet() {
             cursor: 'pointer',
           }}
         >
-          タむトル
+          Menu
         </button>
       </div>
     </div>
