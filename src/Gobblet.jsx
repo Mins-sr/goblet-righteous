@@ -327,6 +327,9 @@ export default function Gobblet() {
     lines.push([0, 1, 2, 3].map(i => getTopPiece(board[i][i])));
     lines.push([0, 1, 2, 3].map(i => getTopPiece(board[i][3 - i])));
 
+    let ownerThreeCount = 0;
+    let opponentThreeCount = 0;
+
     for (const line of lines) {
       const ownerCount = line.filter(p => p && p.owner === owner).length;
       const opponentCount = line.filter(p => p && p.owner === opponent).length;
@@ -334,12 +337,52 @@ export default function Gobblet() {
       if (opponentCount === 0) {
         score += ownerCount * ownerCount * 10;
         if (ownerCount === 4) score += 10000;
-        if (ownerCount === 3) score += 100;
+        if (ownerCount === 3) {
+          score += 100;
+          ownerThreeCount++;
+        }
       }
       if (ownerCount === 0) {
         score -= opponentCount * opponentCount * 10;
         if (opponentCount === 4) score -= 10000;
-        if (opponentCount === 3) score -= 150;
+        if (opponentCount === 3) {
+          score -= 150;
+          opponentThreeCount++;
+        }
+      }
+    }
+
+    // Fork detection: multiple winning threats
+    if (ownerThreeCount >= 2) score += 300;
+    if (opponentThreeCount >= 2) score -= 400;
+
+    // Center control bonus
+    const centerCells = [[1,1], [1,2], [2,1], [2,2]];
+    for (const [row, col] of centerCells) {
+      const piece = getTopPiece(board[row][col]);
+      if (piece) {
+        if (piece.owner === owner) score += 20;
+        else score -= 18;
+      }
+    }
+
+    // Corner control bonus
+    const cornerCells = [[0,0], [0,3], [3,0], [3,3]];
+    for (const [row, col] of cornerCells) {
+      const piece = getTopPiece(board[row][col]);
+      if (piece) {
+        if (piece.owner === owner) score += 15;
+        else score -= 13;
+      }
+    }
+
+    // Piece size strategy: reward for having larger pieces on board
+    for (let row = 0; row < BOARD_SIZE; row++) {
+      for (let col = 0; col < BOARD_SIZE; col++) {
+        const piece = getTopPiece(board[row][col]);
+        if (piece && piece.owner === owner && piece.size >= 3) {
+          score += 5;
+        }
       }
     }
 
@@ -424,12 +467,30 @@ export default function Gobblet() {
       return bestMove;
     }
 
+    if (difficulty === 'hard') {
+      let bestMove = moves[0];
+      let bestScore = -Infinity;
+
+      for (const move of moves) {
+        const { newBoard, newStacks } = applyMove(board, stacks, move, 'cpu');
+        const score = minimax(newBoard, newStacks, 3, false, 'cpu', -Infinity, Infinity);
+        if (score > bestScore) {
+          bestScore = score;
+          bestMove = move;
+        }
+      }
+      return bestMove;
+    }
+
+    // Ultra Hard: deeper search, more moves evaluated
     let bestMove = moves[0];
     let bestScore = -Infinity;
+    const movesToEvaluate = Math.min(moves.length, 40);
 
-    for (const move of moves) {
+    for (let i = 0; i < movesToEvaluate; i++) {
+      const move = moves[i];
       const { newBoard, newStacks } = applyMove(board, stacks, move, 'cpu');
-      const score = minimax(newBoard, newStacks, 3, false, 'cpu', -Infinity, Infinity);
+      const score = minimax(newBoard, newStacks, 4, false, 'cpu', -Infinity, Infinity);
       if (score > bestScore) {
         bestScore = score;
         bestMove = move;
@@ -442,6 +503,7 @@ export default function Gobblet() {
   useEffect(() => {
     if (currentTurn === 'cpu' && !winner && gameStarted) {
       setMessage('CPU thinking...');
+      const delay = difficulty === 'ultrahard' ? 1500 : 800;
       const timer = setTimeout(() => {
         const move = getCpuMove();
         if (move) {
@@ -458,10 +520,10 @@ export default function Gobblet() {
             setMessage('Your turn');
           }
         }
-      }, 800);
+      }, delay);
       return () => clearTimeout(timer);
     }
-  }, [currentTurn, winner, gameStarted, getCpuMove, applyMove, board, stacks]);
+  }, [currentTurn, winner, gameStarted, getCpuMove, applyMove, board, stacks, difficulty]);
 
   const handleStackClick = (stackIndex) => {
     if (currentTurn !== 'player' || winner) return;
@@ -611,7 +673,8 @@ export default function Gobblet() {
           {[
             { key: 'easy', label: 'Easy' },
             { key: 'normal', label: 'Normal' },
-            { key: 'hard', label: 'Hard' }
+            { key: 'hard', label: 'Hard' },
+            { key: 'ultrahard', label: 'Ultra Hard' }
           ].map(({ key, label }) => (
             <button
               key={key}
@@ -643,7 +706,7 @@ export default function Gobblet() {
           fontFamily: 'monospace',
           opacity: 0.6,
         }}>
-          v1.2.2
+          v1.3.0
         </div>
       </div>
     );
@@ -687,14 +750,14 @@ export default function Gobblet() {
             color: '#a89070',
             fontSize: '11px',
           }}>
-            {difficulty === 'easy' ? '★' : difficulty === 'normal' ? '★★' : '★★★'}
+            {difficulty === 'easy' ? '★' : difficulty === 'normal' ? '★★' : difficulty === 'hard' ? '★★★' : '★★★★'}
           </span>
           <span style={{
             color: '#6d5d47',
             fontSize: '8px',
             fontFamily: 'monospace',
           }}>
-            v1.2.2
+            v1.3.0
           </span>
         </div>
       </div>

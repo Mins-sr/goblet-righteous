@@ -4,7 +4,7 @@ A strategic 4-in-a-row board game where you can "gobble" your opponent's pieces 
 
 **[🕹️ Play Now](https://Mins-sr.github.io/goblet-righteous/)**
 
-![Version](https://img.shields.io/badge/version-1.2.1-blue)
+![Version](https://img.shields.io/badge/version-1.3.0-blue)
 ![License](https://img.shields.io/badge/license-MIT-green)
 
 ---
@@ -36,7 +36,8 @@ A strategic 4-in-a-row board game where you can "gobble" your opponent's pieces 
 4. **Difficulty Levels**
    - **Easy (★):** Random moves
    - **Normal (★★):** Strategic evaluation
-   - **Hard (★★★):** Advanced AI with minimax algorithm
+   - **Hard (★★★):** Advanced AI with minimax algorithm (depth 3)
+   - **Ultra Hard (★★★★):** Deepest search with enhanced strategies (depth 4)
 
 ### Controls
 
@@ -193,6 +194,12 @@ export default defineConfig({
    - Depth: 3 levels
    - Evaluates up to 20 best moves per level
    - Win detection and blocking
+4. **Ultra Hard Mode:** Enhanced minimax with advanced strategies
+   - Depth: 4 levels
+   - Evaluates up to 40 moves
+   - Fork detection (multiple winning threats)
+   - Center and corner control bonuses
+   - Strategic piece size evaluation
 
 **Win Condition Check:**
 ```javascript
@@ -223,9 +230,10 @@ See [RESPONSIVE_DESIGN_ISSUE.md](./RESPONSIVE_DESIGN_ISSUE.md) for detailed resp
 
 ### Versioning
 
-**Current Version:** v1.2.1
+**Current Version:** v1.3.0
 
 **Recent Updates:**
+- v1.3.0 - Added Ultra Hard difficulty with enhanced AI strategies
 - v1.2.1 - Fixed responsive layout for mobile devices
 - v1.2.0 - Added version display and responsive design
 - v1.1.0 - English localization and mobile optimization
@@ -288,4 +296,4 @@ Open an issue at: [GitHub Issues](https://github.com/Mins-sr/goblet-righteous/is
 
 **Made with ❤️ using React + Vite**
 
-*Last Updated: v1.2.1*
+*Last Updated: v1.3.0*
