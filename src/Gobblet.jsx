@@ -391,6 +391,28 @@ export default function Gobblet() {
     return score;
   }, []);
 
+  const countPlayerThreats = useCallback((board) => {
+    const getTopPiece = (cell) => cell.length > 0 ? cell[cell.length - 1] : null;
+    const lines = [];
+
+    for (let i = 0; i < BOARD_SIZE; i++) {
+      lines.push(board[i].map(getTopPiece));
+      lines.push(board.map(row => getTopPiece(row[i])));
+    }
+    lines.push([0, 1, 2, 3].map(i => getTopPiece(board[i][i])));
+    lines.push([0, 1, 2, 3].map(i => getTopPiece(board[i][3 - i])));
+
+    let threatCount = 0;
+    for (const line of lines) {
+      const playerCount = line.filter(p => p && p.owner === 'player').length;
+      const cpuCount = line.filter(p => p && p.owner === 'cpu').length;
+      if (playerCount === 3 && cpuCount === 0) {
+        threatCount++;
+      }
+    }
+    return threatCount;
+  }, []);
+
   const minimax = useCallback((board, stacks, depth, isMaximizing, owner, alpha, beta) => {
     const currentWinner = checkWinner(board);
     if (currentWinner === 'cpu') return 10000 - depth;
@@ -424,6 +446,28 @@ export default function Gobblet() {
       return minEval;
     }
   }, [evaluateBoard, getValidMoves, applyMove]);
+
+  const isSafeMove = useCallback((currentBoard, currentStacks, cpuMove) => {
+    const { newBoard: boardAfterCpu, newStacks: stacksAfterCpu } = applyMove(currentBoard, currentStacks, cpuMove, 'cpu');
+
+    if (checkWinner(boardAfterCpu) === 'cpu') return true;
+
+    const playerMovesAfter = getValidMoves(boardAfterCpu, stacksAfterCpu, 'player');
+
+    for (const playerMove of playerMovesAfter) {
+      const { newBoard: boardAfterPlayer } = applyMove(boardAfterCpu, stacksAfterCpu, playerMove, 'player');
+
+      if (checkWinner(boardAfterPlayer) === 'player') {
+        return false;
+      }
+
+      if (countPlayerThreats(boardAfterPlayer) >= 2) {
+        return false;
+      }
+    }
+
+    return true;
+  }, [applyMove, getValidMoves, countPlayerThreats]);
 
   const getCpuMove = useCallback(() => {
     const moves = getValidMoves(board, stacks, 'cpu');
@@ -467,11 +511,21 @@ export default function Gobblet() {
       return bestMove;
     }
 
+    const isPlayerInFork = countPlayerThreats(board) >= 2;
+
     if (difficulty === 'hard') {
-      let bestMove = moves[0];
+      let candidateMoves = moves;
+      if (!isPlayerInFork) {
+        const safeMoves = moves.filter(move => isSafeMove(board, stacks, move));
+        if (safeMoves.length > 0) {
+          candidateMoves = safeMoves;
+        }
+      }
+
+      let bestMove = candidateMoves[0];
       let bestScore = -Infinity;
 
-      for (const move of moves) {
+      for (const move of candidateMoves) {
         const { newBoard, newStacks } = applyMove(board, stacks, move, 'cpu');
         const score = minimax(newBoard, newStacks, 3, false, 'cpu', -Infinity, Infinity);
         if (score > bestScore) {
@@ -483,12 +537,20 @@ export default function Gobblet() {
     }
 
     // Ultra Hard: deeper search, more moves evaluated
-    let bestMove = moves[0];
+    let candidateMoves = moves;
+    if (!isPlayerInFork) {
+      const safeMoves = moves.filter(move => isSafeMove(board, stacks, move));
+      if (safeMoves.length > 0) {
+        candidateMoves = safeMoves;
+      }
+    }
+
+    let bestMove = candidateMoves[0];
     let bestScore = -Infinity;
-    const movesToEvaluate = Math.min(moves.length, 40);
+    const movesToEvaluate = Math.min(candidateMoves.length, 40);
 
     for (let i = 0; i < movesToEvaluate; i++) {
-      const move = moves[i];
+      const move = candidateMoves[i];
       const { newBoard, newStacks } = applyMove(board, stacks, move, 'cpu');
       const score = minimax(newBoard, newStacks, 4, false, 'cpu', -Infinity, Infinity);
       if (score > bestScore) {
@@ -498,7 +560,7 @@ export default function Gobblet() {
     }
 
     return bestMove;
-  }, [board, stacks, difficulty, getValidMoves, applyMove, evaluateBoard, minimax]);
+  }, [board, stacks, difficulty, getValidMoves, applyMove, evaluateBoard, minimax, countPlayerThreats, isSafeMove]);
 
   useEffect(() => {
     if (currentTurn === 'cpu' && !winner && gameStarted) {
