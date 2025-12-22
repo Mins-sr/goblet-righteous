@@ -469,6 +469,23 @@ export default function Gobblet() {
     return true;
   }, [applyMove, getValidMoves, countPlayerThreats]);
 
+  const allowsImmediateWin = useCallback((currentBoard, currentStacks, cpuMove) => {
+    const { newBoard: boardAfterCpu, newStacks: stacksAfterCpu } = applyMove(currentBoard, currentStacks, cpuMove, 'cpu');
+
+    if (checkWinner(boardAfterCpu) === 'cpu') return false;
+
+    const playerMovesAfter = getValidMoves(boardAfterCpu, stacksAfterCpu, 'player');
+
+    for (const playerMove of playerMovesAfter) {
+      const { newBoard: boardAfterPlayer } = applyMove(boardAfterCpu, stacksAfterCpu, playerMove, 'player');
+      if (checkWinner(boardAfterPlayer) === 'player') {
+        return true;
+      }
+    }
+
+    return false;
+  }, [applyMove, getValidMoves]);
+
   const getCpuMove = useCallback(() => {
     const moves = getValidMoves(board, stacks, 'cpu');
     if (moves.length === 0) return null;
@@ -519,6 +536,11 @@ export default function Gobblet() {
         const safeMoves = moves.filter(move => isSafeMove(board, stacks, move));
         if (safeMoves.length > 0) {
           candidateMoves = safeMoves;
+        } else {
+          const nonLosingMoves = moves.filter(move => !allowsImmediateWin(board, stacks, move));
+          if (nonLosingMoves.length > 0) {
+            candidateMoves = nonLosingMoves;
+          }
         }
       }
 
@@ -542,6 +564,11 @@ export default function Gobblet() {
       const safeMoves = moves.filter(move => isSafeMove(board, stacks, move));
       if (safeMoves.length > 0) {
         candidateMoves = safeMoves;
+      } else {
+        const nonLosingMoves = moves.filter(move => !allowsImmediateWin(board, stacks, move));
+        if (nonLosingMoves.length > 0) {
+          candidateMoves = nonLosingMoves;
+        }
       }
     }
 
@@ -560,7 +587,7 @@ export default function Gobblet() {
     }
 
     return bestMove;
-  }, [board, stacks, difficulty, getValidMoves, applyMove, evaluateBoard, minimax, countPlayerThreats, isSafeMove]);
+  }, [board, stacks, difficulty, getValidMoves, applyMove, evaluateBoard, minimax, countPlayerThreats, isSafeMove, allowsImmediateWin]);
 
   useEffect(() => {
     if (currentTurn === 'cpu' && !winner && gameStarted) {
