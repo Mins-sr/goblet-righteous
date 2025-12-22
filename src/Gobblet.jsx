@@ -206,6 +206,8 @@ export default function Gobblet() {
   const [gameStarted, setGameStarted] = useState(false);
   const [message, setMessage] = useState('');
   const [cellSize, setCellSize] = useState(70);
+  const [gameLog, setGameLog] = useState([]);
+  const [copySuccess, setCopySuccess] = useState(false);
 
   useEffect(() => {
     const updateSize = () => {
@@ -235,12 +237,44 @@ export default function Gobblet() {
     setSelectedPiece(null);
     setWinner(null);
     setMessage('Your turn');
+    setGameLog([]);
+    setCopySuccess(false);
   };
 
   const startGame = (diff) => {
     setDifficulty(diff);
     setGameStarted(true);
     resetGame();
+  };
+
+  const formatMove = (move, owner) => {
+    const colLabels = ['A', 'B', 'C', 'D'];
+    const rowLabels = ['1', '2', '3', '4'];
+    const to = `${colLabels[move.toCol]}${rowLabels[move.toRow]}`;
+    if (move.type === 'stack') {
+      return `${owner === 'player' ? 'P' : 'C'}: Stack → ${to}`;
+    } else {
+      const from = `${colLabels[move.fromCol]}${rowLabels[move.fromRow]}`;
+      return `${owner === 'player' ? 'P' : 'C'}: ${from} → ${to}`;
+    }
+  };
+
+  const copyGameLog = async () => {
+    const logText = [
+      `GOBBLET Game Log`,
+      `Difficulty: ${difficulty}`,
+      `Result: ${winner === 'player' ? 'Player Wins' : winner === 'cpu' ? 'CPU Wins' : 'Unknown'}`,
+      `---`,
+      ...gameLog
+    ].join('\n');
+
+    try {
+      await navigator.clipboard.writeText(logText);
+      setCopySuccess(true);
+      setTimeout(() => setCopySuccess(false), 2000);
+    } catch {
+      console.error('Failed to copy');
+    }
   };
 
   const getValidMoves = useCallback((board, stacks, owner) => {
@@ -596,6 +630,7 @@ export default function Gobblet() {
       const timer = setTimeout(() => {
         const move = getCpuMove();
         if (move) {
+          setGameLog(prev => [...prev, formatMove(move, 'cpu')]);
           const { newBoard, newStacks } = applyMove(board, stacks, move, 'cpu');
           setBoard(newBoard);
           setStacks(newStacks);
@@ -612,7 +647,7 @@ export default function Gobblet() {
       }, delay);
       return () => clearTimeout(timer);
     }
-  }, [currentTurn, winner, gameStarted, getCpuMove, applyMove, board, stacks, difficulty]);
+  }, [currentTurn, winner, gameStarted, getCpuMove, applyMove, board, stacks, difficulty, formatMove]);
 
   const handleStackClick = (stackIndex) => {
     if (currentTurn !== 'player' || winner) return;
@@ -660,6 +695,8 @@ export default function Gobblet() {
       const move = selectedPiece.type === 'stack'
         ? { type: 'stack', stackIndex: selectedPiece.stackIndex, toRow: row, toCol: col }
         : { type: 'board', fromRow: selectedPiece.row, fromCol: selectedPiece.col, toRow: row, toCol: col };
+
+      setGameLog(prev => [...prev, formatMove(move, 'player')]);
 
       const { newBoard, newStacks } = applyMove(board, stacks, move, 'player');
 
@@ -795,7 +832,7 @@ export default function Gobblet() {
           fontFamily: 'monospace',
           opacity: 0.6,
         }}>
-          v1.3.0
+          v1.4.0
         </div>
       </div>
     );
@@ -846,7 +883,7 @@ export default function Gobblet() {
             fontSize: '8px',
             fontFamily: 'monospace',
           }}>
-            v1.3.0
+            v1.4.0
           </span>
         </div>
       </div>
@@ -942,6 +979,26 @@ export default function Gobblet() {
         >
           Play Again
         </button>
+
+        {winner && (
+          <button
+            onClick={copyGameLog}
+            style={{
+              padding: '6px 16px',
+              fontSize: '11px',
+              fontFamily: '"Cinzel", serif',
+              background: copySuccess
+                ? 'linear-gradient(180deg, #27ae60 0%, #1e8449 100%)'
+                : 'linear-gradient(180deg, #2471a3 0%, #1a5276 100%)',
+              border: '2px solid #5dade2',
+              borderRadius: '6px',
+              color: '#f5e6d3',
+              cursor: 'pointer',
+            }}
+          >
+            {copySuccess ? 'Copied!' : 'Copy Log'}
+          </button>
+        )}
 
         <button
           onClick={() => setGameStarted(false)}
