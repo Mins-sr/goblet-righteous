@@ -230,6 +230,70 @@ const minimax = (board, stacks, depth, isMaximizing, owner, alpha, beta) => {
   }
 };
 
+const countThreats = (board, targetOwner) => {
+  const getTopPiece = (cell) => cell.length > 0 ? cell[cell.length - 1] : null;
+  const lines = [];
+
+  for (let i = 0; i < BOARD_SIZE; i++) {
+    lines.push(board[i].map(getTopPiece));
+    lines.push(board.map(row => getTopPiece(row[i])));
+  }
+  lines.push([0, 1, 2, 3].map(i => getTopPiece(board[i][i])));
+  lines.push([0, 1, 2, 3].map(i => getTopPiece(board[i][3 - i])));
+
+  let threatCount = 0;
+  const opponent = targetOwner === 'player' ? 'cpu' : 'player';
+  for (const line of lines) {
+    const ownerCount = line.filter(p => p && p.owner === targetOwner).length;
+    const opponentCount = line.filter(p => p && p.owner === opponent).length;
+    if (ownerCount === 3 && opponentCount === 0) {
+      threatCount++;
+    }
+  }
+  return threatCount;
+};
+
+const isSafeMove = (currentBoard, currentStacks, move, owner) => {
+  const { newBoard: boardAfterMove, newStacks: stacksAfterMove } = applyMove(currentBoard, currentStacks, move, owner);
+
+  if (checkWinner(boardAfterMove) === owner) return true;
+
+  const opponent = owner === 'player' ? 'cpu' : 'player';
+  const opponentMovesAfter = getValidMoves(boardAfterMove, stacksAfterMove, opponent);
+
+  for (const opponentMove of opponentMovesAfter) {
+    const { newBoard: boardAfterOpponent } = applyMove(boardAfterMove, stacksAfterMove, opponentMove, opponent);
+
+    if (checkWinner(boardAfterOpponent) === opponent) {
+      return false;
+    }
+
+    if (countThreats(boardAfterOpponent, opponent) >= 2) {
+      return false;
+    }
+  }
+
+  return true;
+};
+
+const allowsImmediateWin = (currentBoard, currentStacks, move, owner) => {
+  const { newBoard: boardAfterMove, newStacks: stacksAfterMove } = applyMove(currentBoard, currentStacks, move, owner);
+
+  if (checkWinner(boardAfterMove) === owner) return false;
+
+  const opponent = owner === 'player' ? 'cpu' : 'player';
+  const opponentMovesAfter = getValidMoves(boardAfterMove, stacksAfterMove, opponent);
+
+  for (const opponentMove of opponentMovesAfter) {
+    const { newBoard: boardAfterOpponent } = applyMove(boardAfterMove, stacksAfterMove, opponentMove, opponent);
+    if (checkWinner(boardAfterOpponent) === opponent) {
+      return true;
+    }
+  }
+
+  return false;
+};
+
 const getAIMove = (board, stacks, owner, difficulty) => {
   const moves = getValidMoves(board, stacks, owner);
   if (moves.length === 0) return null;
@@ -256,11 +320,26 @@ const getAIMove = (board, stacks, owner, difficulty) => {
     }
   }
 
+  const isOpponentInFork = countThreats(board, opponent) >= 2;
+
   if (difficulty === 'hard') {
-    let bestMove = moves[0];
+    let candidateMoves = moves;
+    if (!isOpponentInFork) {
+      const safeMoves = moves.filter(move => isSafeMove(board, stacks, move, owner));
+      if (safeMoves.length > 0) {
+        candidateMoves = safeMoves;
+      } else {
+        const nonLosingMoves = moves.filter(move => !allowsImmediateWin(board, stacks, move, owner));
+        if (nonLosingMoves.length > 0) {
+          candidateMoves = nonLosingMoves;
+        }
+      }
+    }
+
+    let bestMove = candidateMoves[0];
     let bestScore = -Infinity;
 
-    for (const move of moves) {
+    for (const move of candidateMoves) {
       const { newBoard, newStacks } = applyMove(board, stacks, move, owner);
       const score = minimax(newBoard, newStacks, 3, false, owner, -Infinity, Infinity);
       if (score > bestScore) {
@@ -272,12 +351,25 @@ const getAIMove = (board, stacks, owner, difficulty) => {
   }
 
   // Ultra Hard
-  let bestMove = moves[0];
+  let candidateMoves = moves;
+  if (!isOpponentInFork) {
+    const safeMoves = moves.filter(move => isSafeMove(board, stacks, move, owner));
+    if (safeMoves.length > 0) {
+      candidateMoves = safeMoves;
+    } else {
+      const nonLosingMoves = moves.filter(move => !allowsImmediateWin(board, stacks, move, owner));
+      if (nonLosingMoves.length > 0) {
+        candidateMoves = nonLosingMoves;
+      }
+    }
+  }
+
+  let bestMove = candidateMoves[0];
   let bestScore = -Infinity;
-  const movesToEvaluate = Math.min(moves.length, 40);
+  const movesToEvaluate = Math.min(candidateMoves.length, 40);
 
   for (let i = 0; i < movesToEvaluate; i++) {
-    const move = moves[i];
+    const move = candidateMoves[i];
     const { newBoard, newStacks } = applyMove(board, stacks, move, owner);
     const score = minimax(newBoard, newStacks, 4, false, owner, -Infinity, Infinity);
     if (score > bestScore) {
