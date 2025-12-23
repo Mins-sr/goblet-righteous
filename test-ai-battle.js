@@ -560,14 +560,15 @@ if (ultraHardWins > hardWins) {
 const playGameNewVsOld = (gameNum) => {
   let board = createEmptyBoard();
   let stacks = createInitialStacks();
-  let currentTurn = 'player'; // player = New Hard (v1.6.0), cpu = Old Hard (v1.5.0)
+  let currentTurn = 'player'; // player = Old Hard (v1.5.0), cpu = New Hard (v1.6.0)
   let moveCount = 0;
   const maxMoves = 100;
 
   while (moveCount < maxMoves) {
+    // minimaxが'cpu'視点でハードコードされているため、役割を入れ替え
     const move = currentTurn === 'player'
-      ? getAIMove(board, stacks, 'player', 'hard')  // 新ロジック
-      : getAIMove_Old(board, stacks, 'cpu', 'hard'); // 旧ロジック
+      ? getAIMove_Old(board, stacks, 'player', 'hard') // 旧ロジック（先手）
+      : getAIMove(board, stacks, 'cpu', 'hard');       // 新ロジック（後手）
 
     if (!move) {
       return 'draw';
@@ -590,8 +591,8 @@ const playGameNewVsOld = (gameNum) => {
 };
 
 console.log('\n\n🎮 Regression Test: New Hard (v1.6.0) vs Old Hard (v1.5.0)\n');
-console.log('Player (New Hard v1.6.0) plays first');
-console.log('CPU (Old Hard v1.5.0) plays second\n');
+console.log('Player (Old Hard v1.5.0) plays first');
+console.log('CPU (New Hard v1.6.0) plays second\n');
 
 const numGames2 = 20;
 let newHardWins = 0;
@@ -603,10 +604,12 @@ console.log(`Running ${numGames2} games...\n`);
 for (let i = 0; i < numGames2; i++) {
   const result = playGameNewVsOld(i + 1);
 
-  if (result === 'player') {
+  if (result === 'cpu') {
+    // cpu = New Hard (v1.6.0)
     newHardWins++;
     console.log(`  Game ${i + 1}: New Hard wins ✓`);
-  } else if (result === 'cpu') {
+  } else if (result === 'player') {
+    // player = Old Hard (v1.5.0)
     oldHardWins++;
     console.log(`  Game ${i + 1}: Old Hard wins`);
   } else {
