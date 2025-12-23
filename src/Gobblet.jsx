@@ -524,6 +524,38 @@ export default function Gobblet() {
     return false;
   }, [applyMove, getValidMoves]);
 
+  const findSafeBlockMove = useCallback((currentBoard, currentStacks, cpuMoves, targetRow, targetCol) => {
+    const blockMoves = cpuMoves.filter(m => m.toRow === targetRow && m.toCol === targetCol);
+    if (blockMoves.length === 0) return null;
+
+    // サイズ降順でソート（大きいコマ優先）
+    blockMoves.sort((a, b) => b.pieceSize - a.pieceSize);
+
+    for (const blockMove of blockMoves) {
+      const { newBoard, newStacks } = applyMove(currentBoard, currentStacks, blockMove, 'cpu');
+
+      // ブロック後、プレイヤーがそのマスを覆い被せて勝てるかチェック
+      const playerMovesAfter = getValidMoves(newBoard, newStacks, 'player');
+      let canBeCovered = false;
+
+      for (const playerMove of playerMovesAfter) {
+        if (playerMove.toRow === targetRow && playerMove.toCol === targetCol) {
+          const { newBoard: boardAfterPlayer } = applyMove(newBoard, newStacks, playerMove, 'player');
+          if (checkWinner(boardAfterPlayer) === 'player') {
+            canBeCovered = true;
+            break;
+          }
+        }
+      }
+
+      if (!canBeCovered) {
+        return blockMove;
+      }
+    }
+
+    return null;
+  }, [applyMove, getValidMoves]);
+
   const getCpuMove = useCallback(() => {
     const moves = getValidMoves(board, stacks, 'cpu');
     if (moves.length === 0) return null;
@@ -543,9 +575,24 @@ export default function Gobblet() {
     for (const playerMove of playerMoves) {
       const { newBoard: testBoard } = applyMove(board, stacks, playerMove, 'player');
       if (checkWinner(testBoard) === 'player') {
-        for (const move of moves) {
-          if (move.toRow === playerMove.toRow && move.toCol === playerMove.toCol) {
-            return move;
+        if (difficulty === 'hard' || difficulty === 'ultrahard') {
+          // ハード以上: 覆い被せられない安全なブロック手を探す
+          const safeBlock = findSafeBlockMove(board, stacks, moves, playerMove.toRow, playerMove.toCol);
+          if (safeBlock) {
+            return safeBlock;
+          }
+          // 安全なブロック手がない場合でも、最大サイズの駒でブロック（ブロックしないより良い）
+          const blockMoves = moves.filter(m => m.toRow === playerMove.toRow && m.toCol === playerMove.toCol);
+          if (blockMoves.length > 0) {
+            blockMoves.sort((a, b) => b.pieceSize - a.pieceSize);
+            return blockMoves[0];
+          }
+        } else {
+          // ノーマル: 最大サイズのコマでブロック
+          const blockMoves = moves.filter(m => m.toRow === playerMove.toRow && m.toCol === playerMove.toCol);
+          if (blockMoves.length > 0) {
+            blockMoves.sort((a, b) => b.pieceSize - a.pieceSize);
+            return blockMoves[0];
           }
         }
       }
@@ -625,7 +672,7 @@ export default function Gobblet() {
     }
 
     return bestMove;
-  }, [board, stacks, difficulty, getValidMoves, applyMove, evaluateBoard, minimax, countPlayerThreats, isSafeMove, allowsImmediateWin]);
+  }, [board, stacks, difficulty, getValidMoves, applyMove, evaluateBoard, minimax, countPlayerThreats, isSafeMove, allowsImmediateWin, findSafeBlockMove]);
 
   useEffect(() => {
     if (currentTurn === 'cpu' && !winner && gameStarted) {
@@ -836,7 +883,7 @@ export default function Gobblet() {
           fontFamily: 'monospace',
           opacity: 0.6,
         }}>
-          v1.5.0
+          v1.6.0
         </div>
       </div>
     );
@@ -890,7 +937,7 @@ export default function Gobblet() {
             fontSize: '8px',
             fontFamily: 'monospace',
           }}>
-            v1.5.0
+            v1.6.0
           </span>
         </div>
       </div>
