@@ -214,12 +214,16 @@ export default function Gobblet() {
       const vh = window.innerHeight;
       const vw = window.innerWidth;
 
-      const totalFixedHeight = 280;
-      const availableForBoard = vh - totalFixedHeight;
-      const maxCellFromHeight = (availableForBoard - 37) / 4;
+      // 固定要素の高さ合計
+      // Header: 24px, StackArea×2: 140px, MessageBar: 30px
+      // Buttons: 36px, gaps: 36px, padding: 16px = 282px
+      const fixedElementsHeight = 282;
 
-      const availableWidth = vw - 32;
-      const maxCellFromWidth = (availableWidth - 37) / 4;
+      const availableHeight = vh - fixedElementsHeight;
+      const maxCellFromHeight = Math.floor((availableHeight - 37) / 4);
+
+      const availableWidth = vw - 16;
+      const maxCellFromWidth = Math.floor((availableWidth - 37) / 4);
 
       const newCellSize = Math.min(Math.max(Math.min(maxCellFromHeight, maxCellFromWidth), 38), 70);
       setCellSize(newCellSize);
@@ -832,7 +836,7 @@ export default function Gobblet() {
           fontFamily: 'monospace',
           opacity: 0.6,
         }}>
-          v1.4.0
+          v1.5.0
         </div>
       </div>
     );
@@ -842,13 +846,15 @@ export default function Gobblet() {
 
   return (
     <div style={{
-      height: '100vh',
+      height: '100dvh',
+      minHeight: '-webkit-fill-available',
       background: 'linear-gradient(135deg, #2c1810 0%, #4a3728 50%, #2c1810 100%)',
       display: 'flex',
       flexDirection: 'column',
       alignItems: 'center',
-      justifyContent: 'space-between',
-      padding: '6px 8px',
+      justifyContent: 'flex-start',
+      gap: '6px',
+      padding: '8px',
       fontFamily: '"Cinzel", Georgia, serif',
       boxSizing: 'border-box',
       overflow: 'hidden',
@@ -856,6 +862,7 @@ export default function Gobblet() {
       <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600;700&display=swap" rel="stylesheet" />
 
       <div style={{
+        flex: 'none',
         display: 'flex',
         alignItems: 'center',
         justifyContent: 'space-between',
@@ -883,66 +890,79 @@ export default function Gobblet() {
             fontSize: '8px',
             fontFamily: 'monospace',
           }}>
-            v1.4.0
+            v1.5.0
           </span>
         </div>
       </div>
 
-      <StackArea
-        stacks={stacks.cpu}
-        owner="cpu"
-        onStackClick={() => {}}
-        selectedPiece={null}
-        isPlayerTurn={false}
-        label="CPU"
-        cellSize={cellSize}
-      />
+      <div style={{ flex: 'none' }}>
+        <StackArea
+          stacks={stacks.cpu}
+          owner="cpu"
+          onStackClick={() => {}}
+          selectedPiece={null}
+          isPlayerTurn={false}
+          label="CPU"
+          cellSize={cellSize}
+        />
+      </div>
 
       <div style={{
-        padding: '8px',
-        background: 'linear-gradient(145deg, #6d5d47, #5d4e37)',
-        borderRadius: '12px',
-        boxShadow: '0 8px 24px rgba(0,0,0,0.5), inset 0 1px 2px rgba(255,255,255,0.1)',
-        border: '3px solid #8b7355',
+        flex: '1',
+        minHeight: 0,
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center',
       }}>
         <div style={{
-          display: 'grid',
-          gridTemplateColumns: `repeat(4, ${cellSize}px)`,
-          gap: '5px',
+          padding: '8px',
+          background: 'linear-gradient(145deg, #6d5d47, #5d4e37)',
+          borderRadius: '12px',
+          boxShadow: '0 8px 24px rgba(0,0,0,0.5), inset 0 1px 2px rgba(255,255,255,0.1)',
+          border: '3px solid #8b7355',
         }}>
-          {board.map((row, rowIndex) =>
-            row.map((cell, colIndex) => (
-              <BoardCell
-                key={`${rowIndex}-${colIndex}`}
-                cell={cell}
-                rowIndex={rowIndex}
-                colIndex={colIndex}
-                onCellClick={(r, c) => {
-                  if (cell.length > 0 && cell[cell.length - 1].owner === 'player' && !selectedPiece) {
-                    handleBoardPieceClick(r, c);
-                  } else {
-                    handleCellClick(r, c);
-                  }
-                }}
-                canPlace={canPlaceAt(rowIndex, colIndex)}
-                cellSize={cellSize}
-              />
-            ))
-          )}
+          <div style={{
+            display: 'grid',
+            gridTemplateColumns: `repeat(4, ${cellSize}px)`,
+            gap: '5px',
+          }}>
+            {board.map((row, rowIndex) =>
+              row.map((cell, colIndex) => (
+                <BoardCell
+                  key={`${rowIndex}-${colIndex}`}
+                  cell={cell}
+                  rowIndex={rowIndex}
+                  colIndex={colIndex}
+                  onCellClick={(r, c) => {
+                    if (cell.length > 0 && cell[cell.length - 1].owner === 'player' && !selectedPiece) {
+                      handleBoardPieceClick(r, c);
+                    } else {
+                      handleCellClick(r, c);
+                    }
+                  }}
+                  canPlace={canPlaceAt(rowIndex, colIndex)}
+                  cellSize={cellSize}
+                />
+              ))
+            )}
+          </div>
         </div>
       </div>
 
-      <StackArea
-        stacks={stacks.player}
-        owner="player"
-        onStackClick={handleStackClick}
-        selectedPiece={selectedPiece}
-        isPlayerTurn={currentTurn === 'player'}
-        label="YOU"
-        cellSize={cellSize}
-      />
+      <div style={{ flex: 'none' }}>
+        <StackArea
+          stacks={stacks.player}
+          owner="player"
+          onStackClick={handleStackClick}
+          selectedPiece={selectedPiece}
+          isPlayerTurn={currentTurn === 'player'}
+          label="YOU"
+          cellSize={cellSize}
+        />
+      </div>
 
       <div style={{
+        flex: 'none',
         padding: '6px 14px',
         background: winner
           ? (winner === 'player' ? 'linear-gradient(180deg, #27ae60, #1e8449)' : 'linear-gradient(180deg, #e74c3c, #c0392b)')
@@ -961,6 +981,7 @@ export default function Gobblet() {
       </div>
 
       <div style={{
+        flex: 'none',
         display: 'flex',
         gap: '10px',
       }}>
