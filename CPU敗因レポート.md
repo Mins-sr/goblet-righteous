@@ -105,18 +105,94 @@ isSafeMove('Stack[2] → C1') = true  // ✓ 正しく安全と判定
 
 **理論上、「A2 → C1」は候補から除外されるはず！**
 
+---
+
+## 追加検証結果（2024年12月24日）
+
+### isSafeMove()の詳細検証
+
+#### テスト1: 隠れた駒を含む完全なボード状態
+
+```
+完全なボード状態（手番27後）:
+  A         B         C         D
+1 C2,P4     P1        ·         P2
+2 C4        P3,C3     ·         ·
+3 P4        ·         P1,C1     ·
+4 P2        P3        ·         ·
+```
+
+| テスト項目 | 結果 |
+|-----------|------|
+| countPlayerThreats | 1（Row 1のみ） |
+| isPlayerInFork | false |
+| isSafeMove('A2 → C1') | **false** ✓ |
+| isSafeMove('Stack[2] → C1') | **true** ✓ |
+| 安全な手の数 | **5件** |
+
+#### テスト2: getCpuMoveシミュレーション（Ultra Hardモード）
+
+```
+[Step 1] 有効手数: 55件
+[Step 2] CPU即勝手: なし
+[Step 3] isPlayerInFork: false
+
+[Step 4] isSafeMoveでフィルタリング...
+安全な手: 5件
+  - Stack[1](size 3) → B1
+  - Stack[1](size 3) → D1
+  - Stack[2](size 4) → B1
+  - Stack[2](size 4) → C1
+  - Stack[2](size 4) → D1
+
+→ 安全な手のみを候補に
+
+[Step 5] Minimax評価（深さ4）
+
+Minimax評価（上位5手）:
+  1. Stack[1](size 3) → D1 (score: 0)
+  2. Stack[1](size 3) → B1 (score: -40)
+  3. Stack[2](size 4) → B1 (score: -50)
+  4. Stack[2](size 4) → D1 (score: -50)
+  5. Stack[2](size 4) → C1 (score: -9999)
+
+[Step 6] 選択された手: Stack[1](size 3) → D1
+
+悪手「A2 → C1」が候補に含まれているか: false ✓
+```
+
+### 検証結論
+
+| 項目 | 結果 |
+|------|------|
+| isSafeMove()関数の正確性 | ✓ 正常動作 |
+| getCpuMoveのロジック | ✓ 正常動作 |
+| シミュレーションでの選択 | ✓ 安全な手を選択 |
+| 実際のゲームでの選択 | ❌ 危険な手を選択 |
+
+**重要な発見: 純粋なJavaScriptでのシミュレーションでは正しく動作するが、実際のReact環境では異なる結果が発生した。**
+
 ### 考えられる原因
 
-1. **コードのバグ（可能性: 中）**
-   - `isSafeMove()`のフィルタリングが特定の条件下で失敗している
-   - React のステート管理（`useCallback`依存配列）の問題
-   - ブラウザ実行時の非同期処理やタイミングの問題
+1. **Reactのクロージャ問題（可能性: 高）** ⭐
+   - `getCpuMove()`が呼び出された時点で、`board`や`stacks`の参照が古い値を指していた可能性
+   - `useCallback`の依存配列が正しくても、React状態の更新タイミングで古い状態が参照される
+   - プレイヤーの手が適用された直後、Reactの状態更新が完了する前にCPUの思考が開始された可能性
 
-2. **Minimax評価の問題（可能性: 低）**
+2. **useCallback依存配列の問題（可能性: 中）**
+   - `isSafeMove`の依存配列: `[applyMove, getValidMoves, countPlayerThreats]`
+   - `getCpuMove`の依存配列: 多数の関数を含む
+   - いずれかの依存が正しく更新されていない可能性
+
+3. **ボード状態の再現ズレ（可能性: 中）**
+   - ゲームログから再現したボード状態と、実際のゲーム中の状態が微妙に異なる可能性
+   - 隠れた駒の存在が正しく記録されていなかった可能性
+
+4. **Minimax評価の問題（可能性: 低）**
    - 安全な手の中で、誤って危険な手が高スコアになる
-   - しかし、「A2 → C1」は安全な手リストから除外されているはず
+   - しかし、シミュレーションでは「A2 → C1」は候補から除外されている
 
-3. **ランダム要素の影響（可能性: 極低）**
+5. **ランダム要素の影響（可能性: 極低）**
    - `evaluateBoard()`に`Math.random() * 5`の要素がある
    - しかし、この範囲では勝敗を左右するほどの影響はない
 
@@ -200,3 +276,21 @@ isSafeMove('Stack[2] → C1') = true  // ✓ 正しく安全と判定
 - `test-safe-move.js`: `isSafeMove()`の動作確認
 - `debug-cpu-logic.js`: CPU思考ロジックのデバッグ
 - `full-state-analysis.js`: 隠れた駒を含む完全な状態分析
+- `verify-threats.js`: countPlayerThreatsの検証（追加）
+- `debug-getCpuMove.js`: getCpuMoveのシミュレーション（追加）
+
+---
+
+## 今後の調査方針
+
+1. **React DevToolsでの状態監視**
+   - getCpuMove()呼び出し時点でのboard/stacksの状態をログ出力
+   - isSafeMove()のフィルタリング結果をリアルタイムで確認
+
+2. **useRefの活用検討**
+   - board/stacksの最新値を常に参照できるようuseRefを併用
+   - クロージャ問題を回避する実装パターンに変更
+
+3. **デバッグモードの追加**
+   - 開発環境で詳細なログを出力するフラグを追加
+   - 候補手、安全な手、選択された手を逐次記録
