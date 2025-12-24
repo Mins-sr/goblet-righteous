@@ -677,7 +677,7 @@ export default function Gobblet() {
   useEffect(() => {
     if (currentTurn === 'cpu' && !winner && gameStarted) {
       setMessage('CPU thinking...');
-      const delay = difficulty === 'ultrahard' ? 1500 : 800;
+      const delay = 800;
       const timer = setTimeout(() => {
         const move = getCpuMove();
         if (move) {
