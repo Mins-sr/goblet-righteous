@@ -485,10 +485,36 @@ export default function Gobblet() {
     }
   }, [evaluateBoard, getValidMoves, applyMove]);
 
+  const wouldAbandonDefense = useCallback((currentBoard, move) => {
+    // Only check when moving a piece from the board (not from stack)
+    if (move.type !== 'board') return false;
+
+    const fromCell = currentBoard[move.fromRow][move.fromCol];
+    if (fromCell.length <= 1) return false;
+
+    const hiddenPieces = fromCell.slice(0, -1);
+    const hasPlayerPieceUnderneath = hiddenPieces.some(p => p.owner === 'player');
+
+    if (!hasPlayerPieceUnderneath) return false;
+
+    // Simulate revealing the hidden piece
+    const boardAfterReveal = currentBoard.map(row => row.map(cell => [...cell]));
+    boardAfterReveal[move.fromRow][move.fromCol] = [...fromCell.slice(0, -1)];
+
+    // Check if revealing creates an immediate win for player
+    return checkWinner(boardAfterReveal) === 'player';
+  }, []);
+
   const isSafeMove = useCallback((currentBoard, currentStacks, cpuMove) => {
     const { newBoard: boardAfterCpu, newStacks: stacksAfterCpu } = applyMove(currentBoard, currentStacks, cpuMove, 'cpu');
 
+    // If this move wins the game, it's always safe
     if (checkWinner(boardAfterCpu) === 'cpu') return true;
+
+    // CRITICAL: Block moves that abandon defensive positions and cause immediate loss
+    if (wouldAbandonDefense(currentBoard, cpuMove)) {
+      return false;
+    }
 
     const playerMovesAfter = getValidMoves(boardAfterCpu, stacksAfterCpu, 'player');
 
@@ -505,7 +531,7 @@ export default function Gobblet() {
     }
 
     return true;
-  }, [applyMove, getValidMoves, countPlayerThreats]);
+  }, [applyMove, getValidMoves, countPlayerThreats, wouldAbandonDefense]);
 
   const allowsImmediateWin = useCallback((currentBoard, currentStacks, cpuMove) => {
     const { newBoard: boardAfterCpu, newStacks: stacksAfterCpu } = applyMove(currentBoard, currentStacks, cpuMove, 'cpu');
@@ -883,7 +909,7 @@ export default function Gobblet() {
           fontFamily: 'monospace',
           opacity: 0.6,
         }}>
-          v1.6.0
+          v1.8.0
         </div>
       </div>
     );
@@ -937,7 +963,7 @@ export default function Gobblet() {
             fontSize: '8px',
             fontFamily: 'monospace',
           }}>
-            v1.6.0
+            v1.8.0
           </span>
         </div>
       </div>
