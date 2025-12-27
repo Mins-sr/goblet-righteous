@@ -1,5 +1,14 @@
 import React, { useState, useCallback, useEffect } from 'react';
 import { getDinosaurComponent } from './DinosaurIcons';
+import { useDeviceType, useOrientation } from './hooks/useResponsive';
+import {
+  calculateFixedHeight,
+  getMaxCellSize,
+  HEADER_SPACING_OFFSET,
+  TOP_SPACING_OFFSET,
+  BOTTOM_SPACING_OFFSET,
+  MESSAGE_SPACING_OFFSET,
+} from './utils/calculations';
 
 const BOARD_SIZE = 4;
 const PIECE_SIZES = [1, 2, 3, 4];
@@ -182,12 +191,6 @@ const StackArea = ({ stacks, owner, onStackClick, selectedPiece, isPlayerTurn, l
   );
 };
 
-// スペーシングのオフセット（基準値）
-const HEADER_SPACING_OFFSET = 6;  // Header↔CPU間の基準値
-const TOP_SPACING_OFFSET = 10;    // CPU↔Board間の基準値
-const BOTTOM_SPACING_OFFSET = 20; // Board↔YOU間の基準値
-const MESSAGE_SPACING_OFFSET = 6; // YOU↔Message間の基準値
-
 // デフォルトのスペーシング設定
 const DEFAULT_SPACING = {
   headerSpacing: 7,  // Header↔CPU間調整値 (-6〜20px) → デフォルト13px
@@ -222,6 +225,10 @@ const saveSpacingOptions = (options) => {
 };
 
 export default function Gobblet() {
+  // レスポンシブデザイン用フック
+  const deviceType = useDeviceType();
+  const orientation = useOrientation();
+
   const [board, setBoard] = useState(createEmptyBoard());
   const [stacks, setStacks] = useState(createInitialStacks());
   const [currentTurn, setCurrentTurn] = useState('player');
@@ -241,10 +248,12 @@ export default function Gobblet() {
       const vh = window.innerHeight;
       const vw = window.innerWidth;
 
-      // 固定要素の高さ合計
-      // Header: 24px, StackArea×2: 140px, MessageBar: 30px
-      // Buttons: 36px, gaps: 36px, padding: 16px = 282px
-      const fixedElementsHeight = 282;
+      // デバイスタイプと向きに基づいて固定要素の高さを動的に計算
+      const fixedElementsHeight = calculateFixedHeight(
+        deviceType,
+        orientation,
+        spacingOptions
+      );
 
       const availableHeight = vh - fixedElementsHeight;
       const maxCellFromHeight = Math.floor((availableHeight - 37) / 4);
@@ -252,14 +261,20 @@ export default function Gobblet() {
       const availableWidth = vw - 16;
       const maxCellFromWidth = Math.floor((availableWidth - 37) / 4);
 
-      const newCellSize = Math.min(Math.max(Math.min(maxCellFromHeight, maxCellFromWidth), 38), 70);
+      // デバイスタイプに応じた最大cellSizeを取得
+      const maxCellSizeForDevice = getMaxCellSize(deviceType);
+
+      const newCellSize = Math.min(
+        Math.max(Math.min(maxCellFromHeight, maxCellFromWidth), 38),
+        maxCellSizeForDevice
+      );
       setCellSize(newCellSize);
     };
 
     updateSize();
     window.addEventListener('resize', updateSize);
     return () => window.removeEventListener('resize', updateSize);
-  }, []);
+  }, [deviceType, orientation, spacingOptions]);
 
   const resetGame = () => {
     setBoard(createEmptyBoard());
