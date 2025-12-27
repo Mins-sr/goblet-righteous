@@ -186,12 +186,14 @@ const StackArea = ({ stacks, owner, onStackClick, selectedPiece, isPlayerTurn, l
 const HEADER_SPACING_OFFSET = 6;  // Header↔CPU間の基準値
 const TOP_SPACING_OFFSET = 10;    // CPU↔Board間の基準値
 const BOTTOM_SPACING_OFFSET = 20; // Board↔YOU間の基準値
+const MESSAGE_SPACING_OFFSET = 6; // YOU↔Message間の基準値
 
 // デフォルトのスペーシング設定
 const DEFAULT_SPACING = {
-  headerSpacing: 0, // Header↔CPU間調整値 (-6〜20px)
-  topSpacing: 0,    // CPU↔Board間調整値 (-10〜30px)
-  bottomSpacing: 0, // Board↔YOU間調整値 (-20〜20px)
+  headerSpacing: 0,  // Header↔CPU間調整値 (-6〜20px)
+  topSpacing: 0,     // CPU↔Board間調整値 (-10〜30px)
+  bottomSpacing: 0,  // Board↔YOU間調整値 (-20〜20px)
+  messageSpacing: 0, // YOU↔Message間調整値 (-6〜30px)
 };
 
 // LocalStorageキー
@@ -1004,6 +1006,41 @@ export default function Gobblet() {
             </div>
           </div>
 
+          {/* メッセージスペース設定 */}
+          <div>
+            <label style={{
+              display: 'block',
+              color: '#d4a574',
+              fontSize: '13px',
+              marginBottom: '8px',
+              letterSpacing: '1px',
+            }}>
+              Message Spacing (YOU↔Message)
+            </label>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+              <input
+                type="range"
+                min={-MESSAGE_SPACING_OFFSET}
+                max="30"
+                value={spacingOptions.messageSpacing}
+                onChange={(e) => updateSpacingOption('messageSpacing', parseInt(e.target.value))}
+                style={{
+                  flex: 1,
+                  accentColor: '#d4a574',
+                  cursor: 'pointer',
+                }}
+              />
+              <span style={{
+                color: '#f5e6d3',
+                fontSize: '12px',
+                minWidth: '36px',
+                textAlign: 'right',
+              }}>
+                {spacingOptions.messageSpacing + MESSAGE_SPACING_OFFSET}px
+              </span>
+            </div>
+          </div>
+
           {/* プレビュー表示 */}
           <div style={{
             marginTop: '8px',
@@ -1086,6 +1123,22 @@ export default function Gobblet() {
                 alignItems: 'center',
                 justifyContent: 'center',
               }}>YOU</div>
+              <div style={{
+                height: `${Math.max((spacingOptions.messageSpacing + MESSAGE_SPACING_OFFSET) * 0.5, 2)}px`,
+                width: '2px',
+                background: '#d4a574',
+              }} />
+              <div style={{
+                width: '70px',
+                height: '14px',
+                background: '#5d4e37',
+                borderRadius: '3px',
+                fontSize: '7px',
+                color: '#f5e6d3',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+              }}>Message</div>
             </div>
           </div>
         </div>
@@ -1354,9 +1407,13 @@ export default function Gobblet() {
         />
       </div>
 
+      {/* スペーサー (YOU↔Message) */}
+      {(spacingOptions.messageSpacing + MESSAGE_SPACING_OFFSET) > 0 && (
+        <div style={{ flex: 'none', height: `${spacingOptions.messageSpacing + MESSAGE_SPACING_OFFSET}px` }} />
+      )}
+
       <div style={{
         flex: 'none',
-        marginTop: '6px',
         padding: '6px 14px',
         background: winner
           ? (winner === 'player' ? 'linear-gradient(180deg, #27ae60, #1e8449)' : 'linear-gradient(180deg, #e74c3c, #c0392b)')
