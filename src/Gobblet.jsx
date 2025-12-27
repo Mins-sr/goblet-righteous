@@ -100,21 +100,14 @@ const BoardCell = ({ cell, rowIndex, colIndex, onCellClick, canPlace, cellSize }
         position: 'relative',
       }}
     >
-      {cell.map((piece, index) => (
-        <div key={index} style={{
-          position: 'absolute',
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'center',
-        }}>
-          <Piece
-            size={piece.size}
-            owner={piece.owner}
-            isTop={index === cell.length - 1}
-            cellSize={cellSize}
-          />
-        </div>
-      ))}
+      {cell.length > 0 && (
+        <Piece
+          size={cell[cell.length - 1].size}
+          owner={cell[cell.length - 1].owner}
+          isTop={true}
+          cellSize={cellSize}
+        />
+      )}
     </div>
   );
 };
