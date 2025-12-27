@@ -1185,7 +1185,6 @@ export default function Gobblet() {
       flexDirection: 'column',
       alignItems: 'center',
       justifyContent: 'flex-start',
-      gap: '6px',
       padding: '8px',
       fontFamily: '"Cinzel", Georgia, serif',
       boxSizing: 'border-box',
@@ -1200,6 +1199,7 @@ export default function Gobblet() {
         justifyContent: 'space-between',
         width: '100%',
         maxWidth: `${boardSize + 40}px`,
+        marginBottom: '6px',
       }}>
         <h1 style={{
           fontSize: '16px',
@@ -1244,13 +1244,7 @@ export default function Gobblet() {
         <div style={{ flex: 'none', height: `${spacingOptions.topSpacing}px` }} />
       )}
 
-      <div style={{
-        flex: '1',
-        minHeight: 0,
-        display: 'flex',
-        alignItems: 'center',
-        justifyContent: 'center',
-      }}>
+      <div style={{ flex: 'none' }}>
         <div style={{
           padding: '8px',
           background: 'linear-gradient(145deg, #6d5d47, #5d4e37)',
@@ -1300,6 +1294,7 @@ export default function Gobblet() {
 
       <div style={{
         flex: 'none',
+        marginTop: '6px',
         padding: '6px 14px',
         background: winner
           ? (winner === 'player' ? 'linear-gradient(180deg, #27ae60, #1e8449)' : 'linear-gradient(180deg, #e74c3c, #c0392b)')
@@ -1321,6 +1316,7 @@ export default function Gobblet() {
         flex: 'none',
         display: 'flex',
         gap: '10px',
+        marginTop: '6px',
       }}>
         <button
           onClick={resetGame}
