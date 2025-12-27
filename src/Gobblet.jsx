@@ -1239,11 +1239,6 @@ export default function Gobblet() {
         />
       </div>
 
-      {/* 上部スペーサー (CPU↔Board) */}
-      {spacingOptions.topSpacing > 0 && (
-        <div style={{ flex: 'none', height: `${spacingOptions.topSpacing}px` }} />
-      )}
-
       <div style={{
         flex: '1',
         minHeight: 0,
