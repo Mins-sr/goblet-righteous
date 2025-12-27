@@ -182,6 +182,37 @@ const StackArea = ({ stacks, owner, onStackClick, selectedPiece, isPlayerTurn, l
   );
 };
 
+// デフォルトのスペーシング設定
+const DEFAULT_SPACING = {
+  topSpacing: 0,    // 上部スペース (0-40px)
+  bottomSpacing: 0, // 下部スペース (0-40px)
+};
+
+// LocalStorageキー
+const SPACING_STORAGE_KEY = 'gobblet-spacing-options';
+
+// LocalStorageからスペーシング設定を読み込む
+const loadSpacingOptions = () => {
+  try {
+    const saved = localStorage.getItem(SPACING_STORAGE_KEY);
+    if (saved) {
+      return { ...DEFAULT_SPACING, ...JSON.parse(saved) };
+    }
+  } catch (e) {
+    console.error('Failed to load spacing options:', e);
+  }
+  return DEFAULT_SPACING;
+};
+
+// LocalStorageにスペーシング設定を保存
+const saveSpacingOptions = (options) => {
+  try {
+    localStorage.setItem(SPACING_STORAGE_KEY, JSON.stringify(options));
+  } catch (e) {
+    console.error('Failed to save spacing options:', e);
+  }
+};
+
 export default function Gobblet() {
   const [board, setBoard] = useState(createEmptyBoard());
   const [stacks, setStacks] = useState(createInitialStacks());
@@ -194,6 +225,8 @@ export default function Gobblet() {
   const [cellSize, setCellSize] = useState(70);
   const [gameLog, setGameLog] = useState([]);
   const [copySuccess, setCopySuccess] = useState(false);
+  const [showOptions, setShowOptions] = useState(false);
+  const [spacingOptions, setSpacingOptions] = useState(loadSpacingOptions);
 
   useEffect(() => {
     const updateSize = () => {
@@ -229,6 +262,12 @@ export default function Gobblet() {
     setMessage('Your turn');
     setGameLog([]);
     setCopySuccess(false);
+  };
+
+  const updateSpacingOption = (key, value) => {
+    const newOptions = { ...spacingOptions, [key]: value };
+    setSpacingOptions(newOptions);
+    saveSpacingOptions(newOptions);
   };
 
   const startGame = (diff) => {
@@ -814,6 +853,220 @@ export default function Gobblet() {
     return cell.length === 0 || cell[cell.length - 1].size < pieceSize;
   };
 
+  // オプション画面
+  if (showOptions) {
+    return (
+      <div style={{
+        height: '100vh',
+        background: 'linear-gradient(135deg, #2c1810 0%, #4a3728 50%, #2c1810 100%)',
+        display: 'flex',
+        flexDirection: 'column',
+        alignItems: 'center',
+        justifyContent: 'center',
+        fontFamily: '"Cinzel", Georgia, serif',
+        padding: '16px',
+        boxSizing: 'border-box',
+        overflow: 'hidden',
+        position: 'relative',
+      }}>
+        <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600;700&display=swap" rel="stylesheet" />
+
+        <h2 style={{
+          fontSize: 'clamp(20px, 6vw, 32px)',
+          color: '#d4a574',
+          textShadow: '0 4px 8px rgba(0,0,0,0.5)',
+          marginBottom: '24px',
+          letterSpacing: '4px',
+        }}>
+          OPTIONS
+        </h2>
+
+        <div style={{
+          display: 'flex',
+          flexDirection: 'column',
+          gap: '20px',
+          width: '100%',
+          maxWidth: '300px',
+          background: 'linear-gradient(180deg, #5d4e37 0%, #4a3f2f 100%)',
+          borderRadius: '12px',
+          padding: '20px',
+          boxShadow: '0 4px 16px rgba(0,0,0,0.3)',
+          border: '2px solid #6d5d47',
+        }}>
+          {/* 上部スペース設定 */}
+          <div>
+            <label style={{
+              display: 'block',
+              color: '#d4a574',
+              fontSize: '13px',
+              marginBottom: '8px',
+              letterSpacing: '1px',
+            }}>
+              Top Spacing (CPU↔Board)
+            </label>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+              <input
+                type="range"
+                min="0"
+                max="40"
+                value={spacingOptions.topSpacing}
+                onChange={(e) => updateSpacingOption('topSpacing', parseInt(e.target.value))}
+                style={{
+                  flex: 1,
+                  accentColor: '#d4a574',
+                  cursor: 'pointer',
+                }}
+              />
+              <span style={{
+                color: '#f5e6d3',
+                fontSize: '12px',
+                minWidth: '36px',
+                textAlign: 'right',
+              }}>
+                {spacingOptions.topSpacing}px
+              </span>
+            </div>
+          </div>
+
+          {/* 下部スペース設定 */}
+          <div>
+            <label style={{
+              display: 'block',
+              color: '#d4a574',
+              fontSize: '13px',
+              marginBottom: '8px',
+              letterSpacing: '1px',
+            }}>
+              Bottom Spacing (Board↔YOU)
+            </label>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+              <input
+                type="range"
+                min="0"
+                max="40"
+                value={spacingOptions.bottomSpacing}
+                onChange={(e) => updateSpacingOption('bottomSpacing', parseInt(e.target.value))}
+                style={{
+                  flex: 1,
+                  accentColor: '#d4a574',
+                  cursor: 'pointer',
+                }}
+              />
+              <span style={{
+                color: '#f5e6d3',
+                fontSize: '12px',
+                minWidth: '36px',
+                textAlign: 'right',
+              }}>
+                {spacingOptions.bottomSpacing}px
+              </span>
+            </div>
+          </div>
+
+          {/* プレビュー表示 */}
+          <div style={{
+            marginTop: '8px',
+            padding: '12px',
+            background: 'rgba(0,0,0,0.2)',
+            borderRadius: '8px',
+          }}>
+            <div style={{
+              color: '#a89070',
+              fontSize: '10px',
+              marginBottom: '8px',
+              textAlign: 'center',
+              textTransform: 'uppercase',
+              letterSpacing: '1px',
+            }}>
+              Preview
+            </div>
+            <div style={{
+              display: 'flex',
+              flexDirection: 'column',
+              alignItems: 'center',
+              gap: '2px',
+            }}>
+              <div style={{
+                width: '80px',
+                height: '16px',
+                background: '#5DADE2',
+                borderRadius: '4px',
+                fontSize: '8px',
+                color: '#fff',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+              }}>CPU</div>
+              <div style={{
+                height: `${Math.max(spacingOptions.topSpacing * 0.5, 2)}px`,
+                width: '2px',
+                background: '#d4a574',
+              }} />
+              <div style={{
+                width: '60px',
+                height: '40px',
+                background: '#8b7355',
+                borderRadius: '4px',
+                fontSize: '8px',
+                color: '#f5e6d3',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+              }}>Board</div>
+              <div style={{
+                height: `${Math.max(spacingOptions.bottomSpacing * 0.5, 2)}px`,
+                width: '2px',
+                background: '#d4a574',
+              }} />
+              <div style={{
+                width: '80px',
+                height: '16px',
+                background: '#FF6B6B',
+                borderRadius: '4px',
+                fontSize: '8px',
+                color: '#fff',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+              }}>YOU</div>
+            </div>
+          </div>
+        </div>
+
+        <button
+          onClick={() => setShowOptions(false)}
+          style={{
+            marginTop: '24px',
+            padding: '12px 32px',
+            fontSize: '14px',
+            fontFamily: '"Cinzel", serif',
+            background: 'linear-gradient(180deg, #8b7355 0%, #6d5d47 100%)',
+            border: '2px solid #a89070',
+            borderRadius: '10px',
+            color: '#f5e6d3',
+            cursor: 'pointer',
+            transition: 'all 0.3s ease',
+            boxShadow: '0 4px 12px rgba(0,0,0,0.4)',
+          }}
+        >
+          Back
+        </button>
+
+        <div style={{
+          position: 'absolute',
+          bottom: '10px',
+          right: '10px',
+          color: '#6d5d47',
+          fontSize: '9px',
+          fontFamily: 'monospace',
+          opacity: 0.6,
+        }}>
+          v1.9.0
+        </div>
+      </div>
+    );
+  }
+
   if (!gameStarted) {
     return (
       <div style={{
@@ -885,6 +1138,26 @@ export default function Gobblet() {
             </button>
           ))}
         </div>
+
+        {/* オプションボタン */}
+        <button
+          onClick={() => setShowOptions(true)}
+          style={{
+            marginTop: '20px',
+            padding: '10px 24px',
+            fontSize: '12px',
+            fontFamily: '"Cinzel", serif',
+            background: 'linear-gradient(180deg, #5d4e37 0%, #4a3f2f 100%)',
+            border: '2px solid #6d5d47',
+            borderRadius: '8px',
+            color: '#a89070',
+            cursor: 'pointer',
+            transition: 'all 0.3s ease',
+            boxShadow: '0 2px 8px rgba(0,0,0,0.3)',
+          }}
+        >
+          ⚙ Options
+        </button>
 
         <div style={{
           position: 'absolute',
@@ -966,6 +1239,11 @@ export default function Gobblet() {
         />
       </div>
 
+      {/* 上部スペーサー (CPU↔Board) */}
+      {spacingOptions.topSpacing > 0 && (
+        <div style={{ flex: 'none', height: `${spacingOptions.topSpacing}px` }} />
+      )}
+
       <div style={{
         flex: '1',
         minHeight: 0,
@@ -1007,6 +1285,11 @@ export default function Gobblet() {
           </div>
         </div>
       </div>
+
+      {/* 下部スペーサー (Board↔YOU) */}
+      {spacingOptions.bottomSpacing > 0 && (
+        <div style={{ flex: 'none', height: `${spacingOptions.bottomSpacing}px` }} />
+      )}
 
       <div style={{ flex: 'none' }}>
         <StackArea
