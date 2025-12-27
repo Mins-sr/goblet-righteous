@@ -1,4 +1,5 @@
 import React, { useState, useCallback, useEffect } from 'react';
+import { getDinosaurComponent } from './DinosaurIcons';
 
 const BOARD_SIZE = 4;
 const PIECE_SIZES = [1, 2, 3, 4];
@@ -50,8 +51,10 @@ const checkWinner = (board) => {
 const Piece = ({ size, owner, isTop, onClick, isSelected, cellSize }) => {
   const baseSize = cellSize ? (cellSize * 0.3 + size * cellSize * 0.15) : (20 + size * 14);
   const colors = owner === 'player'
-    ? { main: '#c0392b', light: '#e74c3c', dark: '#922b21', ring: '#f5b7b1' }
-    : { main: '#2471a3', light: '#5dade2', dark: '#1a5276', ring: '#aed6f1' };
+    ? { main: '#FF6B6B', belly: '#FFB3B3' }
+    : { main: '#5DADE2', belly: '#AED6F1' };
+
+  const DinoComponent = getDinosaurComponent(size);
 
   return (
     <div
@@ -59,28 +62,18 @@ const Piece = ({ size, owner, isTop, onClick, isSelected, cellSize }) => {
       style={{
         width: `${baseSize}px`,
         height: `${baseSize}px`,
-        borderRadius: '50%',
-        background: `radial-gradient(circle at 35% 35%, ${colors.light}, ${colors.main} 50%, ${colors.dark})`,
-        boxShadow: isSelected
-          ? `0 0 0 3px #f1c40f, 0 4px 8px rgba(0,0,0,0.4)`
-          : `inset 0 -2px 4px rgba(0,0,0,0.3), 0 2px 4px rgba(0,0,0,0.3)`,
         cursor: isTop ? 'pointer' : 'default',
         position: 'absolute',
         display: 'flex',
         alignItems: 'center',
         justifyContent: 'center',
         transition: 'all 0.2s ease',
-        border: `2px solid ${colors.ring}`,
         zIndex: size,
-        transform: isSelected ? 'scale(1.1)' : 'scale(1)',
+        transform: isSelected ? 'scale(1.15)' : 'scale(1)',
+        filter: isSelected ? 'drop-shadow(0 0 4px #f1c40f) drop-shadow(0 0 8px #f1c40f)' : 'drop-shadow(1px 2px 2px rgba(0,0,0,0.3))',
       }}
     >
-      <div style={{
-        width: `${baseSize * 0.5}px`,
-        height: `${baseSize * 0.5}px`,
-        borderRadius: '50%',
-        background: `radial-gradient(circle at 40% 40%, ${colors.light}88, transparent)`,
-      }} />
+      <DinoComponent mainColor={colors.main} bellyColor={colors.belly} size={baseSize} />
     </div>
   );
 };
