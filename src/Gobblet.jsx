@@ -865,16 +865,17 @@ export default function Gobblet() {
   if (showOptions) {
     return (
       <div style={{
-        height: '100vh',
+        minHeight: '100vh',
         background: 'linear-gradient(135deg, #2c1810 0%, #4a3728 50%, #2c1810 100%)',
         display: 'flex',
         flexDirection: 'column',
         alignItems: 'center',
-        justifyContent: 'center',
+        justifyContent: 'flex-start',
         fontFamily: '"Cinzel", Georgia, serif',
         padding: '16px',
+        paddingTop: 'max(16px, env(safe-area-inset-top))',
         boxSizing: 'border-box',
-        overflow: 'hidden',
+        overflow: 'auto',
         position: 'relative',
       }}>
         <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600;700&display=swap" rel="stylesheet" />
@@ -883,7 +884,8 @@ export default function Gobblet() {
           fontSize: 'clamp(20px, 6vw, 32px)',
           color: '#d4a574',
           textShadow: '0 4px 8px rgba(0,0,0,0.5)',
-          marginBottom: '24px',
+          marginTop: '16px',
+          marginBottom: '16px',
           letterSpacing: '4px',
         }}>
           OPTIONS
@@ -892,12 +894,12 @@ export default function Gobblet() {
         <div style={{
           display: 'flex',
           flexDirection: 'column',
-          gap: '16px',
+          gap: '12px',
           width: '100%',
           maxWidth: '300px',
           background: 'linear-gradient(180deg, #5d4e37 0%, #4a3f2f 100%)',
           borderRadius: '12px',
-          padding: '20px',
+          padding: '16px',
           boxShadow: '0 4px 16px rgba(0,0,0,0.3)',
           border: '2px solid #6d5d47',
         }}>
@@ -1146,7 +1148,8 @@ export default function Gobblet() {
         <button
           onClick={() => setShowOptions(false)}
           style={{
-            marginTop: '24px',
+            marginTop: '16px',
+            marginBottom: '16px',
             padding: '12px 32px',
             fontSize: '14px',
             fontFamily: '"Cinzel", serif',
@@ -1180,16 +1183,17 @@ export default function Gobblet() {
   if (!gameStarted) {
     return (
       <div style={{
-        height: '100vh',
+        minHeight: '100vh',
         background: 'linear-gradient(135deg, #2c1810 0%, #4a3728 50%, #2c1810 100%)',
         display: 'flex',
         flexDirection: 'column',
         alignItems: 'center',
-        justifyContent: 'center',
+        justifyContent: 'flex-start',
         fontFamily: '"Cinzel", Georgia, serif',
         padding: '16px',
+        paddingTop: 'max(32px, env(safe-area-inset-top))',
         boxSizing: 'border-box',
-        overflow: 'hidden',
+        overflow: 'auto',
         position: 'relative',
       }}>
         <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600;700&display=swap" rel="stylesheet" />
@@ -1198,6 +1202,7 @@ export default function Gobblet() {
           fontSize: 'clamp(28px, 8vw, 48px)',
           color: '#d4a574',
           textShadow: '0 4px 8px rgba(0,0,0,0.5), 0 0 40px rgba(212,165,116,0.3)',
+          marginTop: '24px',
           marginBottom: '12px',
           letterSpacing: '6px',
         }}>
@@ -1207,7 +1212,8 @@ export default function Gobblet() {
         <p style={{
           color: '#a89070',
           fontSize: 'clamp(10px, 2.5vw, 14px)',
-          marginBottom: '24px',
+          marginTop: '0',
+          marginBottom: '20px',
           textAlign: 'center',
           maxWidth: '90%',
           lineHeight: '1.6',
@@ -1253,7 +1259,8 @@ export default function Gobblet() {
         <button
           onClick={() => setShowOptions(true)}
           style={{
-            marginTop: '20px',
+            marginTop: '16px',
+            marginBottom: '16px',
             padding: '10px 24px',
             fontSize: '12px',
             fontFamily: '"Cinzel", serif',
