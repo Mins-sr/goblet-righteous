@@ -184,8 +184,8 @@ const StackArea = ({ stacks, owner, onStackClick, selectedPiece, isPlayerTurn, l
 
 // デフォルトのスペーシング設定
 const DEFAULT_SPACING = {
-  topSpacing: 0,    // 上部スペース (0-40px)
-  bottomSpacing: 0, // 下部スペース (0-40px)
+  topSpacing: 3,    // 上部スペース (0-40px)
+  bottomSpacing: 3, // 下部スペース (0-40px)
 };
 
 // LocalStorageキー
@@ -1227,7 +1227,7 @@ export default function Gobblet() {
         </div>
       </div>
 
-      <div style={{ flex: 'none' }}>
+      <div style={{ flex: 'none', marginBottom: `${spacingOptions.topSpacing - 6}px` }}>
         <StackArea
           stacks={stacks.cpu}
           owner="cpu"
@@ -1286,12 +1286,7 @@ export default function Gobblet() {
         </div>
       </div>
 
-      {/* 下部スペーサー (Board↔YOU) */}
-      {spacingOptions.bottomSpacing > 0 && (
-        <div style={{ flex: 'none', height: `${spacingOptions.bottomSpacing}px` }} />
-      )}
-
-      <div style={{ flex: 'none' }}>
+      <div style={{ flex: 'none', marginTop: `${spacingOptions.bottomSpacing - 6}px` }}>
         <StackArea
           stacks={stacks.player}
           owner="player"
