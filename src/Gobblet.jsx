@@ -872,8 +872,8 @@ export default function Gobblet() {
         alignItems: 'center',
         justifyContent: 'flex-start',
         fontFamily: '"Cinzel", Georgia, serif',
-        padding: '16px',
-        paddingTop: 'max(16px, env(safe-area-inset-top))',
+        padding: '12px',
+        paddingTop: 'max(12px, env(safe-area-inset-top))',
         boxSizing: 'border-box',
         overflow: 'auto',
         position: 'relative',
@@ -884,8 +884,8 @@ export default function Gobblet() {
           fontSize: 'clamp(20px, 6vw, 32px)',
           color: '#d4a574',
           textShadow: '0 4px 8px rgba(0,0,0,0.5)',
-          marginTop: '16px',
-          marginBottom: '16px',
+          marginTop: '8px',
+          marginBottom: '12px',
           letterSpacing: '4px',
         }}>
           OPTIONS
@@ -1148,10 +1148,10 @@ export default function Gobblet() {
         <button
           onClick={() => setShowOptions(false)}
           style={{
-            marginTop: '16px',
-            marginBottom: '16px',
-            padding: '12px 32px',
-            fontSize: '14px',
+            marginTop: '12px',
+            marginBottom: '8px',
+            padding: '10px 28px',
+            fontSize: '13px',
             fontFamily: '"Cinzel", serif',
             background: 'linear-gradient(180deg, #8b7355 0%, #6d5d47 100%)',
             border: '2px solid #a89070',
@@ -1166,13 +1166,12 @@ export default function Gobblet() {
         </button>
 
         <div style={{
-          position: 'absolute',
-          bottom: '10px',
-          right: '10px',
           color: '#6d5d47',
           fontSize: '9px',
           fontFamily: 'monospace',
           opacity: 0.6,
+          marginTop: '4px',
+          marginBottom: '16px',
         }}>
           v1.9.0
         </div>
@@ -1190,8 +1189,8 @@ export default function Gobblet() {
         alignItems: 'center',
         justifyContent: 'flex-start',
         fontFamily: '"Cinzel", Georgia, serif',
-        padding: '16px',
-        paddingTop: 'max(32px, env(safe-area-inset-top))',
+        padding: '12px',
+        paddingTop: 'max(16px, env(safe-area-inset-top))',
         boxSizing: 'border-box',
         overflow: 'auto',
         position: 'relative',
@@ -1202,8 +1201,8 @@ export default function Gobblet() {
           fontSize: 'clamp(28px, 8vw, 48px)',
           color: '#d4a574',
           textShadow: '0 4px 8px rgba(0,0,0,0.5), 0 0 40px rgba(212,165,116,0.3)',
-          marginTop: '24px',
-          marginBottom: '12px',
+          marginTop: '16px',
+          marginBottom: '8px',
           letterSpacing: '6px',
         }}>
           GOBBLET
@@ -1213,7 +1212,7 @@ export default function Gobblet() {
           color: '#a89070',
           fontSize: 'clamp(10px, 2.5vw, 14px)',
           marginTop: '0',
-          marginBottom: '20px',
+          marginBottom: '16px',
           textAlign: 'center',
           maxWidth: '90%',
           lineHeight: '1.6',
@@ -1259,8 +1258,8 @@ export default function Gobblet() {
         <button
           onClick={() => setShowOptions(true)}
           style={{
-            marginTop: '16px',
-            marginBottom: '16px',
+            marginTop: '12px',
+            marginBottom: '8px',
             padding: '10px 24px',
             fontSize: '12px',
             fontFamily: '"Cinzel", serif',
@@ -1277,13 +1276,12 @@ export default function Gobblet() {
         </button>
 
         <div style={{
-          position: 'absolute',
-          bottom: '10px',
-          right: '10px',
           color: '#6d5d47',
           fontSize: '9px',
           fontFamily: 'monospace',
           opacity: 0.6,
+          marginTop: '4px',
+          marginBottom: '16px',
         }}>
           v1.9.0
         </div>
