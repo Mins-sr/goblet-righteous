@@ -182,10 +182,14 @@ const StackArea = ({ stacks, owner, onStackClick, selectedPiece, isPlayerTurn, l
   );
 };
 
+// スペーシングのオフセット（基準値）
+const TOP_SPACING_OFFSET = 10;    // 上部スペースの基準値
+const BOTTOM_SPACING_OFFSET = 20; // 下部スペースの基準値
+
 // デフォルトのスペーシング設定
 const DEFAULT_SPACING = {
-  topSpacing: 3,    // 上部スペース (0-40px)
-  bottomSpacing: 3, // 下部スペース (0-40px)
+  topSpacing: 0,    // 上部スペース調整値 (-10〜30px)
+  bottomSpacing: 0, // 下部スペース調整値 (-20〜20px)
 };
 
 // LocalStorageキー
@@ -907,8 +911,8 @@ export default function Gobblet() {
             <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
               <input
                 type="range"
-                min="0"
-                max="40"
+                min={-TOP_SPACING_OFFSET}
+                max="30"
                 value={spacingOptions.topSpacing}
                 onChange={(e) => updateSpacingOption('topSpacing', parseInt(e.target.value))}
                 style={{
@@ -923,7 +927,7 @@ export default function Gobblet() {
                 minWidth: '36px',
                 textAlign: 'right',
               }}>
-                {spacingOptions.topSpacing}px
+                {spacingOptions.topSpacing + TOP_SPACING_OFFSET}px
               </span>
             </div>
           </div>
@@ -942,8 +946,8 @@ export default function Gobblet() {
             <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
               <input
                 type="range"
-                min="0"
-                max="40"
+                min={-BOTTOM_SPACING_OFFSET}
+                max="20"
                 value={spacingOptions.bottomSpacing}
                 onChange={(e) => updateSpacingOption('bottomSpacing', parseInt(e.target.value))}
                 style={{
@@ -958,7 +962,7 @@ export default function Gobblet() {
                 minWidth: '36px',
                 textAlign: 'right',
               }}>
-                {spacingOptions.bottomSpacing}px
+                {spacingOptions.bottomSpacing + BOTTOM_SPACING_OFFSET}px
               </span>
             </div>
           </div>
@@ -998,7 +1002,7 @@ export default function Gobblet() {
                 justifyContent: 'center',
               }}>CPU</div>
               <div style={{
-                height: `${Math.max(spacingOptions.topSpacing * 0.5, 2)}px`,
+                height: `${Math.max((spacingOptions.topSpacing + TOP_SPACING_OFFSET) * 0.5, 2)}px`,
                 width: '2px',
                 background: '#d4a574',
               }} />
@@ -1014,7 +1018,7 @@ export default function Gobblet() {
                 justifyContent: 'center',
               }}>Board</div>
               <div style={{
-                height: `${Math.max(spacingOptions.bottomSpacing * 0.5, 2)}px`,
+                height: `${Math.max((spacingOptions.bottomSpacing + BOTTOM_SPACING_OFFSET) * 0.5, 2)}px`,
                 width: '2px',
                 background: '#d4a574',
               }} />
@@ -1240,8 +1244,8 @@ export default function Gobblet() {
       </div>
 
       {/* 上部スペーサー (CPU↔Board) */}
-      {spacingOptions.topSpacing > 0 && (
-        <div style={{ flex: 'none', height: `${spacingOptions.topSpacing}px` }} />
+      {(spacingOptions.topSpacing + TOP_SPACING_OFFSET) > 0 && (
+        <div style={{ flex: 'none', height: `${spacingOptions.topSpacing + TOP_SPACING_OFFSET}px` }} />
       )}
 
       <div style={{ flex: 'none' }}>
@@ -1281,8 +1285,8 @@ export default function Gobblet() {
       </div>
 
       {/* 下部スペーサー (Board↔YOU) */}
-      {spacingOptions.bottomSpacing > 0 && (
-        <div style={{ flex: 'none', height: `${spacingOptions.bottomSpacing}px` }} />
+      {(spacingOptions.bottomSpacing + BOTTOM_SPACING_OFFSET) > 0 && (
+        <div style={{ flex: 'none', height: `${spacingOptions.bottomSpacing + BOTTOM_SPACING_OFFSET}px` }} />
       )}
 
       <div style={{ flex: 'none' }}>
