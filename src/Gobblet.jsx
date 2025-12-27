@@ -183,13 +183,15 @@ const StackArea = ({ stacks, owner, onStackClick, selectedPiece, isPlayerTurn, l
 };
 
 // スペーシングのオフセット（基準値）
-const TOP_SPACING_OFFSET = 10;    // 上部スペースの基準値
-const BOTTOM_SPACING_OFFSET = 20; // 下部スペースの基準値
+const HEADER_SPACING_OFFSET = 6;  // Header↔CPU間の基準値
+const TOP_SPACING_OFFSET = 10;    // CPU↔Board間の基準値
+const BOTTOM_SPACING_OFFSET = 20; // Board↔YOU間の基準値
 
 // デフォルトのスペーシング設定
 const DEFAULT_SPACING = {
-  topSpacing: 0,    // 上部スペース調整値 (-10〜30px)
-  bottomSpacing: 0, // 下部スペース調整値 (-20〜20px)
+  headerSpacing: 0, // Header↔CPU間調整値 (-6〜20px)
+  topSpacing: 0,    // CPU↔Board間調整値 (-10〜30px)
+  bottomSpacing: 0, // Board↔YOU間調整値 (-20〜20px)
 };
 
 // LocalStorageキー
@@ -888,7 +890,7 @@ export default function Gobblet() {
         <div style={{
           display: 'flex',
           flexDirection: 'column',
-          gap: '20px',
+          gap: '16px',
           width: '100%',
           maxWidth: '300px',
           background: 'linear-gradient(180deg, #5d4e37 0%, #4a3f2f 100%)',
@@ -897,7 +899,42 @@ export default function Gobblet() {
           boxShadow: '0 4px 16px rgba(0,0,0,0.3)',
           border: '2px solid #6d5d47',
         }}>
-          {/* 上部スペース設定 */}
+          {/* Header↔CPU間スペース設定 */}
+          <div>
+            <label style={{
+              display: 'block',
+              color: '#d4a574',
+              fontSize: '13px',
+              marginBottom: '8px',
+              letterSpacing: '1px',
+            }}>
+              Header↔CPU Spacing
+            </label>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+              <input
+                type="range"
+                min={-HEADER_SPACING_OFFSET}
+                max="20"
+                value={spacingOptions.headerSpacing}
+                onChange={(e) => updateSpacingOption('headerSpacing', parseInt(e.target.value))}
+                style={{
+                  flex: 1,
+                  accentColor: '#d4a574',
+                  cursor: 'pointer',
+                }}
+              />
+              <span style={{
+                color: '#f5e6d3',
+                fontSize: '12px',
+                minWidth: '36px',
+                textAlign: 'right',
+              }}>
+                {spacingOptions.headerSpacing + HEADER_SPACING_OFFSET}px
+              </span>
+            </div>
+          </div>
+
+          {/* CPU↔Board間スペース設定 */}
           <div>
             <label style={{
               display: 'block',
@@ -990,6 +1027,22 @@ export default function Gobblet() {
               alignItems: 'center',
               gap: '2px',
             }}>
+              <div style={{
+                width: '60px',
+                height: '12px',
+                background: '#d4a574',
+                borderRadius: '3px',
+                fontSize: '7px',
+                color: '#2c1810',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+              }}>Header</div>
+              <div style={{
+                height: `${Math.max((spacingOptions.headerSpacing + HEADER_SPACING_OFFSET) * 0.5, 2)}px`,
+                width: '2px',
+                background: '#d4a574',
+              }} />
               <div style={{
                 width: '80px',
                 height: '16px',
@@ -1203,7 +1256,7 @@ export default function Gobblet() {
         justifyContent: 'space-between',
         width: '100%',
         maxWidth: `${boardSize + 40}px`,
-        marginBottom: '6px',
+        marginBottom: `${spacingOptions.headerSpacing + HEADER_SPACING_OFFSET}px`,
       }}>
         <h1 style={{
           fontSize: '16px',
