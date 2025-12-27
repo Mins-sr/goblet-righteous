@@ -895,7 +895,7 @@ export default function Gobblet() {
           fontFamily: 'monospace',
           opacity: 0.6,
         }}>
-          v1.8.0
+          v1.9.0
         </div>
       </div>
     );
@@ -949,7 +949,7 @@ export default function Gobblet() {
             fontSize: '8px',
             fontFamily: 'monospace',
           }}>
-            v1.8.0
+            v1.9.0
           </span>
         </div>
       </div>
