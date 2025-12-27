@@ -190,10 +190,10 @@ const MESSAGE_SPACING_OFFSET = 6; // YOU↔Message間の基準値
 
 // デフォルトのスペーシング設定
 const DEFAULT_SPACING = {
-  headerSpacing: 0,  // Header↔CPU間調整値 (-6〜20px)
-  topSpacing: 0,     // CPU↔Board間調整値 (-10〜30px)
-  bottomSpacing: 0,  // Board↔YOU間調整値 (-20〜20px)
-  messageSpacing: 0, // YOU↔Message間調整値 (-6〜30px)
+  headerSpacing: 7,  // Header↔CPU間調整値 (-6〜20px) → デフォルト13px
+  topSpacing: 13,    // CPU↔Board間調整値 (-10〜30px) → デフォルト23px
+  bottomSpacing: 2,  // Board↔YOU間調整値 (-20〜20px) → デフォルト22px
+  messageSpacing: 15, // YOU↔Message間調整値 (-6〜30px) → デフォルト21px
 };
 
 // LocalStorageキー
