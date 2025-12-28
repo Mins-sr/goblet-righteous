@@ -1,9 +1,13 @@
-import React, { useState, useCallback, useEffect } from 'react';
+import React, { useState, useCallback, useEffect, useMemo } from 'react';
 import { getDinosaurComponent } from './DinosaurIcons';
-import { useDeviceType, useOrientation } from './hooks/useResponsive';
+import { useDeviceType, useOrientation, useViewportSize } from './hooks/useResponsive';
+import LandscapeGameLayout from './components/LandscapeGameLayout.jsx';
+import LandscapeTitleLayout from './components/LandscapeTitleLayout.jsx';
 import {
   calculateFixedHeight,
   getMaxCellSize,
+  ensureMinTouchSize,
+  getStackBoxSizeFactor,
   HEADER_SPACING_OFFSET,
   TOP_SPACING_OFFSET,
   BOTTOM_SPACING_OFFSET,
@@ -121,8 +125,8 @@ const BoardCell = ({ cell, rowIndex, colIndex, onCellClick, canPlace, cellSize }
   );
 };
 
-const StackArea = ({ stacks, owner, onStackClick, selectedPiece, isPlayerTurn, label, cellSize }) => {
-  const stackBoxSize = cellSize * 0.85;
+const StackArea = ({ stacks, owner, onStackClick, selectedPiece, isPlayerTurn, label, cellSize, deviceType }) => {
+  const stackBoxSize = cellSize * getStackBoxSizeFactor(deviceType);
 
   return (
     <div style={{
@@ -150,10 +154,13 @@ const StackArea = ({ stacks, owner, onStackClick, selectedPiece, isPlayerTurn, l
         {stacks.map((stack, stackIndex) => (
           <div
             key={stackIndex}
+            data-testid="stack-box"
             onClick={() => owner === 'player' && isPlayerTurn && stack.length > 0 && onStackClick(stackIndex)}
             style={{
               width: `${stackBoxSize}px`,
               height: `${stackBoxSize}px`,
+              minWidth: '44px',
+              minHeight: '44px',
               background: 'linear-gradient(145deg, #8b7355, #6d5d47)',
               borderRadius: '8px',
               display: 'flex',
@@ -228,6 +235,7 @@ export default function Gobblet() {
   // レスポンシブデザイン用フック
   const deviceType = useDeviceType();
   const orientation = useOrientation();
+  const viewportSize = useViewportSize();
 
   const [board, setBoard] = useState(createEmptyBoard());
   const [stacks, setStacks] = useState(createInitialStacks());
@@ -243,38 +251,57 @@ export default function Gobblet() {
   const [showOptions, setShowOptions] = useState(false);
   const [spacingOptions, setSpacingOptions] = useState(loadSpacingOptions);
 
+  // CSS変数--vhの設定（モバイルブラウザのビューポート高さ問題対策）
   useEffect(() => {
-    const updateSize = () => {
-      const vh = window.innerHeight;
-      const vw = window.innerWidth;
-
-      // デバイスタイプと向きに基づいて固定要素の高さを動的に計算
-      const fixedElementsHeight = calculateFixedHeight(
-        deviceType,
-        orientation,
-        spacingOptions
-      );
-
-      const availableHeight = vh - fixedElementsHeight;
-      const maxCellFromHeight = Math.floor((availableHeight - 37) / 4);
-
-      const availableWidth = vw - 16;
-      const maxCellFromWidth = Math.floor((availableWidth - 37) / 4);
-
-      // デバイスタイプに応じた最大cellSizeを取得
-      const maxCellSizeForDevice = getMaxCellSize(deviceType);
-
-      const newCellSize = Math.min(
-        Math.max(Math.min(maxCellFromHeight, maxCellFromWidth), 38),
-        maxCellSizeForDevice
-      );
-      setCellSize(newCellSize);
+    const setVhVariable = () => {
+      const vh = window.innerHeight * 0.01;
+      document.documentElement.style.setProperty('--vh', `${vh}px`);
     };
 
-    updateSize();
-    window.addEventListener('resize', updateSize);
-    return () => window.removeEventListener('resize', updateSize);
+    setVhVariable();
+    window.addEventListener('resize', setVhVariable);
+
+    return () => {
+      window.removeEventListener('resize', setVhVariable);
+    };
+  }, []);
+
+  // Task 6.1: fixedElementsHeightをuseMemoでメモ化
+  const fixedElementsHeight = useMemo(() => {
+    return calculateFixedHeight(
+      deviceType,
+      orientation,
+      spacingOptions
+    );
   }, [deviceType, orientation, spacingOptions]);
+
+  // Task 6.1: cellSize計算をuseMemoでメモ化
+  const calculatedCellSize = useMemo(() => {
+    const vh = viewportSize.height;
+    const vw = viewportSize.width;
+
+    const availableHeight = vh - fixedElementsHeight;
+    const maxCellFromHeight = Math.floor((availableHeight - 37) / 4);
+
+    const availableWidth = vw - 16;
+    const maxCellFromWidth = Math.floor((availableWidth - 37) / 4);
+
+    // デバイスタイプに応じた最大cellSizeを取得
+    const maxCellSizeForDevice = getMaxCellSize(deviceType);
+
+    const calculatedSize = Math.min(
+      Math.min(maxCellFromHeight, maxCellFromWidth),
+      maxCellSizeForDevice
+    );
+
+    // 44pxの最小タッチターゲットサイズを保証
+    return ensureMinTouchSize(calculatedSize, 44);
+  }, [viewportSize, fixedElementsHeight, deviceType]);
+
+  // calculatedCellSizeをcellSize stateに同期
+  useEffect(() => {
+    setCellSize(calculatedCellSize);
+  }, [calculatedCellSize]);
 
   const resetGame = () => {
     setBoard(createEmptyBoard());
@@ -887,8 +914,10 @@ export default function Gobblet() {
         alignItems: 'center',
         justifyContent: 'flex-start',
         fontFamily: '"Cinzel", Georgia, serif',
-        padding: '12px',
         paddingTop: 'max(12px, env(safe-area-inset-top))',
+        paddingBottom: 'max(12px, env(safe-area-inset-bottom))',
+        paddingLeft: 'max(12px, env(safe-area-inset-left))',
+        paddingRight: 'max(12px, env(safe-area-inset-right))',
         boxSizing: 'border-box',
         overflow: 'auto',
         position: 'relative',
@@ -911,7 +940,7 @@ export default function Gobblet() {
           flexDirection: 'column',
           gap: '12px',
           width: '100%',
-          maxWidth: '300px',
+          maxWidth: deviceType === 'mobile' ? '300px' : '500px',
           background: 'linear-gradient(180deg, #5d4e37 0%, #4a3f2f 100%)',
           borderRadius: '12px',
           padding: '16px',
@@ -940,6 +969,7 @@ export default function Gobblet() {
                   flex: 1,
                   accentColor: '#d4a574',
                   cursor: 'pointer',
+                  minHeight: '44px',
                 }}
               />
               <span style={{
@@ -975,6 +1005,7 @@ export default function Gobblet() {
                   flex: 1,
                   accentColor: '#d4a574',
                   cursor: 'pointer',
+                  minHeight: '44px',
                 }}
               />
               <span style={{
@@ -1010,6 +1041,7 @@ export default function Gobblet() {
                   flex: 1,
                   accentColor: '#d4a574',
                   cursor: 'pointer',
+                  minHeight: '44px',
                 }}
               />
               <span style={{
@@ -1045,6 +1077,7 @@ export default function Gobblet() {
                   flex: 1,
                   accentColor: '#d4a574',
                   cursor: 'pointer',
+                  minHeight: '44px',
                 }}
               />
               <span style={{
@@ -1093,7 +1126,7 @@ export default function Gobblet() {
                 justifyContent: 'center',
               }}>Header</div>
               <div style={{
-                height: `${Math.max((spacingOptions.headerSpacing + HEADER_SPACING_OFFSET) * 0.5, 2)}px`,
+                height: `${Math.max((spacingOptions.headerSpacing + HEADER_SPACING_OFFSET) * (deviceType === 'mobile' ? 0.4 : deviceType === 'tablet' ? 0.6 : 0.7), 2)}px`,
                 width: '2px',
                 background: '#d4a574',
               }} />
@@ -1109,7 +1142,7 @@ export default function Gobblet() {
                 justifyContent: 'center',
               }}>CPU</div>
               <div style={{
-                height: `${Math.max((spacingOptions.topSpacing + TOP_SPACING_OFFSET) * 0.5, 2)}px`,
+                height: `${Math.max((spacingOptions.topSpacing + TOP_SPACING_OFFSET) * (deviceType === 'mobile' ? 0.4 : deviceType === 'tablet' ? 0.6 : 0.7), 2)}px`,
                 width: '2px',
                 background: '#d4a574',
               }} />
@@ -1125,7 +1158,7 @@ export default function Gobblet() {
                 justifyContent: 'center',
               }}>Board</div>
               <div style={{
-                height: `${Math.max((spacingOptions.bottomSpacing + BOTTOM_SPACING_OFFSET) * 0.5, 2)}px`,
+                height: `${Math.max((spacingOptions.bottomSpacing + BOTTOM_SPACING_OFFSET) * (deviceType === 'mobile' ? 0.4 : deviceType === 'tablet' ? 0.6 : 0.7), 2)}px`,
                 width: '2px',
                 background: '#d4a574',
               }} />
@@ -1141,7 +1174,7 @@ export default function Gobblet() {
                 justifyContent: 'center',
               }}>YOU</div>
               <div style={{
-                height: `${Math.max((spacingOptions.messageSpacing + MESSAGE_SPACING_OFFSET) * 0.5, 2)}px`,
+                height: `${Math.max((spacingOptions.messageSpacing + MESSAGE_SPACING_OFFSET) * (deviceType === 'mobile' ? 0.4 : deviceType === 'tablet' ? 0.6 : 0.7), 2)}px`,
                 width: '2px',
                 background: '#d4a574',
               }} />
@@ -1175,6 +1208,8 @@ export default function Gobblet() {
             cursor: 'pointer',
             transition: 'all 0.3s ease',
             boxShadow: '0 4px 12px rgba(0,0,0,0.4)',
+            minHeight: '44px',
+            minWidth: '44px',
           }}
         >
           Back
@@ -1195,120 +1230,24 @@ export default function Gobblet() {
   }
 
   if (!gameStarted) {
-    // 横向きモードのタイトル画面
-    if (orientation === 'landscape') {
+    // 横向きモードのタイトル画面 (Task 9.1 & 10.1: LandscapeTitleLayoutコンポーネント使用)
+    // 640px以上の横向きでのみ横向きレイアウトを使用
+    const isLandscape = orientation === 'landscape' && viewportSize.width >= 640;
+    if (isLandscape) {
       return (
-        <div style={{
-          minHeight: '100vh',
-          background: 'linear-gradient(135deg, #2c1810 0%, #4a3728 50%, #2c1810 100%)',
-          display: 'flex',
-          flexDirection: 'row',
-          alignItems: 'center',
-          justifyContent: 'center',
-          fontFamily: '"Cinzel", Georgia, serif',
-          padding: '16px',
-          boxSizing: 'border-box',
-          overflow: 'auto',
-          gap: '32px',
-        }}>
-          <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600;700&display=swap" rel="stylesheet" />
-
-          {/* 左カラム: タイトルと説明 */}
-          <div style={{
-            flex: '1',
-            display: 'flex',
-            flexDirection: 'column',
-            alignItems: 'center',
-            justifyContent: 'center',
-          }}>
-            <h1 style={{
-              fontSize: 'clamp(28px, 6vw, 48px)',
-              color: '#d4a574',
-              textShadow: '0 4px 8px rgba(0,0,0,0.5), 0 0 40px rgba(212,165,116,0.3)',
-              margin: '0 0 12px 0',
-              letterSpacing: '6px',
-            }}>
-              GOBBLET
-            </h1>
-
-            <p style={{
-              color: '#a89070',
-              fontSize: 'clamp(11px, 2vw, 14px)',
-              margin: '0',
-              textAlign: 'center',
-              maxWidth: '300px',
-              lineHeight: '1.6',
-            }}>
-              4-in-a-row on 4×4 board. Cover with bigger pieces
-            </p>
-          </div>
-
-          {/* 右カラム: ボタン */}
-          <div style={{
-            flex: '1',
-            display: 'flex',
-            flexDirection: 'column',
-            alignItems: 'center',
-            justifyContent: 'center',
-            gap: '12px',
-            maxWidth: '280px',
-          }}>
-            {[
-              { key: 'easy', label: 'Easy' },
-              { key: 'normal', label: 'Normal' },
-              { key: 'hard', label: 'Hard' },
-              { key: 'ultrahard', label: 'Ultra Hard' }
-            ].map(({ key, label }) => (
-              <button
-                key={key}
-                onClick={() => startGame(key)}
-                style={{
-                  width: '100%',
-                  padding: '12px',
-                  fontSize: '15px',
-                  fontFamily: '"Cinzel", serif',
-                  background: 'linear-gradient(180deg, #8b7355 0%, #6d5d47 100%)',
-                  border: '2px solid #a89070',
-                  borderRadius: '10px',
-                  color: '#f5e6d3',
-                  cursor: 'pointer',
-                  transition: 'all 0.3s ease',
-                  boxShadow: '0 4px 12px rgba(0,0,0,0.4)',
-                }}
-              >
-                {label}
-              </button>
-            ))}
-
-            <button
-              onClick={() => setShowOptions(true)}
-              style={{
-                width: '100%',
-                padding: '10px 24px',
-                fontSize: '12px',
-                fontFamily: '"Cinzel", serif',
-                background: 'linear-gradient(180deg, #5d4e37 0%, #4a3f2f 100%)',
-                border: '2px solid #6d5d47',
-                borderRadius: '8px',
-                color: '#a89070',
-                cursor: 'pointer',
-                transition: 'all 0.3s ease',
-                boxShadow: '0 2px 8px rgba(0,0,0,0.3)',
-              }}
-            >
-              ⚙ Options
-            </button>
-
-            <div style={{
-              color: '#6d5d47',
-              fontSize: '9px',
-              fontFamily: 'monospace',
-              marginTop: '8px',
-            }}>
-              v1.9.0
-            </div>
-          </div>
-        </div>
+        <LandscapeTitleLayout
+          onStartGame={startGame}
+          showOptions={showOptions}
+          setShowOptions={setShowOptions}
+          spacingOptions={spacingOptions}
+          updateSpacingOption={updateSpacingOption}
+          cellSize={cellSize}
+          deviceType={deviceType}
+          HEADER_SPACING_OFFSET={HEADER_SPACING_OFFSET}
+          TOP_SPACING_OFFSET={TOP_SPACING_OFFSET}
+          BOTTOM_SPACING_OFFSET={BOTTOM_SPACING_OFFSET}
+          MESSAGE_SPACING_OFFSET={MESSAGE_SPACING_OFFSET}
+        />
       );
     }
 
@@ -1322,16 +1261,21 @@ export default function Gobblet() {
         alignItems: 'center',
         justifyContent: 'flex-start',
         fontFamily: '"Cinzel", Georgia, serif',
-        padding: '12px',
         paddingTop: 'max(16px, env(safe-area-inset-top))',
+        paddingBottom: 'max(12px, env(safe-area-inset-bottom))',
+        paddingLeft: 'max(12px, env(safe-area-inset-left))',
+        paddingRight: 'max(12px, env(safe-area-inset-right))',
         boxSizing: 'border-box',
         overflow: 'auto',
         position: 'relative',
+        // Task 10.2: レイアウト切り替えトランジション（300ms、ちらつき防止）
+        opacity: 1,
+        transition: 'opacity 300ms ease-in-out',
       }}>
         <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600;700&display=swap" rel="stylesheet" />
 
         <h1 style={{
-          fontSize: 'clamp(28px, 8vw, 48px)',
+          fontSize: deviceType === 'tablet' ? 'clamp(28px, 8vw, 57.6px)' : 'clamp(28px, 8vw, 48px)',
           color: '#d4a574',
           textShadow: '0 4px 8px rgba(0,0,0,0.5), 0 0 40px rgba(212,165,116,0.3)',
           marginTop: '16px',
@@ -1371,7 +1315,7 @@ export default function Gobblet() {
               onClick={() => startGame(key)}
               style={{
                 padding: '12px',
-                fontSize: '15px',
+                fontSize: deviceType === 'tablet' ? '18px' : '15px',
                 fontFamily: '"Cinzel", serif',
                 background: 'linear-gradient(180deg, #8b7355 0%, #6d5d47 100%)',
                 border: '2px solid #a89070',
@@ -1380,6 +1324,8 @@ export default function Gobblet() {
                 cursor: 'pointer',
                 transition: 'all 0.3s ease',
                 boxShadow: '0 4px 12px rgba(0,0,0,0.4)',
+                minHeight: '44px',
+                minWidth: '44px',
               }}
             >
               {label}
@@ -1394,7 +1340,7 @@ export default function Gobblet() {
             marginTop: '12px',
             marginBottom: '8px',
             padding: '10px 24px',
-            fontSize: '12px',
+            fontSize: deviceType === 'tablet' ? '14.4px' : '12px',
             fontFamily: '"Cinzel", serif',
             background: 'linear-gradient(180deg, #5d4e37 0%, #4a3f2f 100%)',
             border: '2px solid #6d5d47',
@@ -1403,6 +1349,8 @@ export default function Gobblet() {
             cursor: 'pointer',
             transition: 'all 0.3s ease',
             boxShadow: '0 2px 8px rgba(0,0,0,0.3)',
+            minHeight: '44px',
+            minWidth: '44px',
           }}
         >
           ⚙ Options
@@ -1424,236 +1372,55 @@ export default function Gobblet() {
 
   const boardSize = cellSize * 4 + 6 * 3;
 
-  // 横向きモードのレイアウト
-  if (orientation === 'landscape') {
+  // 横向きモードのレイアウト (Task 8.1 & 10.1: LandscapeGameLayoutコンポーネント使用)
+  // 640px以上の横向きでのみ横向きレイアウトを使用
+  const isLandscape = orientation === 'landscape' && viewportSize.width >= 640;
+  if (isLandscape) {
     return (
-      <div style={{
-        height: '100dvh',
-        minHeight: '-webkit-fill-available',
-        background: 'linear-gradient(135deg, #2c1810 0%, #4a3728 50%, #2c1810 100%)',
-        display: 'flex',
-        flexDirection: 'column',
-        alignItems: 'center',
-        justifyContent: 'center',
-        padding: '8px',
-        fontFamily: '"Cinzel", Georgia, serif',
-        boxSizing: 'border-box',
-        overflow: 'hidden',
-      }}>
-        <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600;700&display=swap" rel="stylesheet" />
-
-        {/* Header */}
-        <div style={{
-          width: '100%',
-          maxWidth: '900px',
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'space-between',
-          marginBottom: '8px',
-        }}>
-          <h1 style={{
-            fontSize: '16px',
-            color: '#d4a574',
-            textShadow: '0 2px 4px rgba(0,0,0,0.5)',
-            letterSpacing: '2px',
-            margin: 0,
-          }}>
-            GOBBLET
-          </h1>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-            <span style={{
-              color: '#a89070',
-              fontSize: '11px',
-            }}>
-              {difficulty === 'easy' ? '★' : difficulty === 'normal' ? '★★' : difficulty === 'hard' ? '★★★' : '★★★★'}
-            </span>
-            <span style={{
-              color: '#6d5d47',
-              fontSize: '8px',
-              fontFamily: 'monospace',
-            }}>
-              v1.9.0
-            </span>
-          </div>
-        </div>
-
-        {/* 横並びコンテナ */}
-        <div style={{
-          display: 'flex',
-          flexDirection: 'row',
-          gap: '16px',
-          alignItems: 'center',
-          justifyContent: 'center',
-          maxWidth: '900px',
-        }}>
-          {/* 左カラム: Board */}
-          <div style={{ flex: '0 0 auto' }}>
-            <div style={{
-              padding: '8px',
-              background: 'linear-gradient(145deg, #6d5d47, #5d4e37)',
-              borderRadius: '12px',
-              boxShadow: '0 8px 24px rgba(0,0,0,0.5), inset 0 1px 2px rgba(255,255,255,0.1)',
-              border: '3px solid #8b7355',
-            }}>
-              <div style={{
-                display: 'grid',
-                gridTemplateColumns: `repeat(4, ${cellSize}px)`,
-                gap: '5px',
-              }}>
-                {board.map((row, rowIndex) =>
-                  row.map((cell, colIndex) => (
-                    <BoardCell
-                      key={`${rowIndex}-${colIndex}`}
-                      cell={cell}
-                      rowIndex={rowIndex}
-                      colIndex={colIndex}
-                      onCellClick={(r, c) => {
-                        if (cell.length > 0 && cell[cell.length - 1].owner === 'player' && !selectedPiece) {
-                          handleBoardPieceClick(r, c);
-                        } else {
-                          handleCellClick(r, c);
-                        }
-                      }}
-                      canPlace={canPlaceAt(rowIndex, colIndex)}
-                      cellSize={cellSize}
-                    />
-                  ))
-                )}
-              </div>
-            </div>
-          </div>
-
-          {/* 右カラム: CPU Stack, Message, YOU Stack, Buttons */}
-          <div style={{
-            flex: '1',
-            display: 'flex',
-            flexDirection: 'column',
-            gap: '8px',
-            justifyContent: 'center',
-            alignItems: 'center',
-            minWidth: '200px',
-          }}>
-            {/* CPU Stack */}
-            <StackArea
-              stacks={stacks.cpu}
-              owner="cpu"
-              onStackClick={() => {}}
-              selectedPiece={null}
-              isPlayerTurn={false}
-              label="CPU"
-              cellSize={cellSize}
-            />
-
-            {/* Message */}
-            <div style={{
-              width: '100%',
-              padding: '6px 14px',
-              background: winner
-                ? (winner === 'player' ? 'linear-gradient(180deg, #27ae60, #1e8449)' : 'linear-gradient(180deg, #e74c3c, #c0392b)')
-                : 'linear-gradient(180deg, #5d4e37, #4a3f2f)',
-              borderRadius: '8px',
-              boxShadow: '0 2px 8px rgba(0,0,0,0.3)',
-            }}>
-              <p style={{
-                color: '#f5e6d3',
-                fontSize: '11px',
-                textAlign: 'center',
-                margin: 0,
-              }}>
-                {message}
-              </p>
-            </div>
-
-            {/* YOU Stack */}
-            <StackArea
-              stacks={stacks.player}
-              owner="player"
-              onStackClick={handleStackClick}
-              selectedPiece={selectedPiece}
-              isPlayerTurn={currentTurn === 'player'}
-              label="YOU"
-              cellSize={cellSize}
-            />
-
-            {/* Buttons */}
-            <div style={{
-              display: 'flex',
-              gap: '8px',
-              flexWrap: 'wrap',
-              justifyContent: 'center',
-            }}>
-              <button
-                onClick={resetGame}
-                style={{
-                  padding: '6px 12px',
-                  fontSize: '10px',
-                  fontFamily: '"Cinzel", serif',
-                  background: 'linear-gradient(180deg, #8b7355 0%, #6d5d47 100%)',
-                  border: '2px solid #a89070',
-                  borderRadius: '6px',
-                  color: '#f5e6d3',
-                  cursor: 'pointer',
-                }}
-              >
-                Play Again
-              </button>
-
-              {winner && (
-                <button
-                  onClick={copyGameLog}
-                  style={{
-                    padding: '6px 12px',
-                    fontSize: '10px',
-                    fontFamily: '"Cinzel", serif',
-                    background: copySuccess
-                      ? 'linear-gradient(180deg, #27ae60 0%, #1e8449 100%)'
-                      : 'linear-gradient(180deg, #2471a3 0%, #1a5276 100%)',
-                    border: '2px solid #5dade2',
-                    borderRadius: '6px',
-                    color: '#f5e6d3',
-                    cursor: 'pointer',
-                  }}
-                >
-                  {copySuccess ? 'Copied!' : 'Copy Log'}
-                </button>
-              )}
-
-              <button
-                onClick={() => setGameStarted(false)}
-                style={{
-                  padding: '6px 12px',
-                  fontSize: '10px',
-                  fontFamily: '"Cinzel", serif',
-                  background: 'linear-gradient(180deg, #5d4e37 0%, #4a3f2f 100%)',
-                  border: '2px solid #6d5d47',
-                  borderRadius: '6px',
-                  color: '#a89070',
-                  cursor: 'pointer',
-                }}
-              >
-                Menu
-              </button>
-            </div>
-          </div>
-        </div>
-      </div>
+      <LandscapeGameLayout
+        board={board}
+        stacks={stacks}
+        cellSize={cellSize}
+        selectedPiece={selectedPiece}
+        currentTurn={currentTurn}
+        message={message}
+        onCellClick={handleCellClick}
+        onStackClick={handleStackClick}
+        handleBoardPieceClick={handleBoardPieceClick}
+        resetGame={resetGame}
+        copyGameLog={copyGameLog}
+        canPlaceAt={canPlaceAt}
+        winner={winner}
+        copySuccess={copySuccess}
+        difficulty={difficulty}
+        BoardCell={BoardCell}
+        StackArea={StackArea}
+        setGameStarted={setGameStarted}
+        deviceType={deviceType}
+      />
     );
   }
 
   // 縦向きモード（既存のレイアウト）
   return (
     <div style={{
-      height: '100dvh',
+      height: 'calc(var(--vh, 1vh) * 100)',
       minHeight: '-webkit-fill-available',
       background: 'linear-gradient(135deg, #2c1810 0%, #4a3728 50%, #2c1810 100%)',
       display: 'flex',
       flexDirection: 'column',
       alignItems: 'center',
       justifyContent: 'flex-start',
-      padding: '8px',
+      paddingTop: 'max(8px, env(safe-area-inset-top))',
+      paddingBottom: 'max(8px, env(safe-area-inset-bottom))',
+      paddingLeft: 'max(8px, env(safe-area-inset-left))',
+      paddingRight: 'max(8px, env(safe-area-inset-right))',
       fontFamily: '"Cinzel", Georgia, serif',
       boxSizing: 'border-box',
       overflow: 'hidden',
+      // Task 10.2: レイアウト切り替えトランジション（300ms、ちらつき防止）
+      opacity: 1,
+      transition: 'opacity 300ms ease-in-out',
     }}>
       <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600;700&display=swap" rel="stylesheet" />
 
@@ -1701,6 +1468,7 @@ export default function Gobblet() {
           isPlayerTurn={false}
           label="CPU"
           cellSize={cellSize}
+          deviceType={deviceType}
         />
       </div>
 
@@ -1759,6 +1527,7 @@ export default function Gobblet() {
           isPlayerTurn={currentTurn === 'player'}
           label="YOU"
           cellSize={cellSize}
+          deviceType={deviceType}
         />
       </div>
 
@@ -1778,7 +1547,7 @@ export default function Gobblet() {
       }}>
         <p style={{
           color: '#f5e6d3',
-          fontSize: '11px',
+          fontSize: deviceType === 'tablet' ? '13.2px' : '11px',
           textAlign: 'center',
           margin: 0,
         }}>
@@ -1803,6 +1572,8 @@ export default function Gobblet() {
             borderRadius: '6px',
             color: '#f5e6d3',
             cursor: 'pointer',
+            minHeight: '44px',
+            minWidth: '44px',
           }}
         >
           Play Again
@@ -1822,6 +1593,8 @@ export default function Gobblet() {
               borderRadius: '6px',
               color: '#f5e6d3',
               cursor: 'pointer',
+              minHeight: '44px',
+              minWidth: '44px',
             }}
           >
             {copySuccess ? 'Copied!' : 'Copy Log'}
@@ -1839,6 +1612,8 @@ export default function Gobblet() {
             borderRadius: '6px',
             color: '#a89070',
             cursor: 'pointer',
+            minHeight: '44px',
+            minWidth: '44px',
           }}
         >
           Menu

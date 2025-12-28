@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { debounce } from '../utils/debounce';
 
 /**
  * ブレークポイント定義
@@ -41,8 +42,14 @@ export const useDeviceType = () => {
     };
 
     updateDeviceType();
-    window.addEventListener('resize', updateDeviceType);
-    return () => window.removeEventListener('resize', updateDeviceType);
+
+    // デバウンス処理（150ms）を適用
+    const debouncedUpdate = debounce(updateDeviceType, 150);
+    window.addEventListener('resize', debouncedUpdate);
+
+    return () => {
+      window.removeEventListener('resize', debouncedUpdate);
+    };
   }, []);
 
   return deviceType;
@@ -67,8 +74,14 @@ export const useOrientation = () => {
     };
 
     updateOrientation();
-    window.addEventListener('resize', updateOrientation);
-    return () => window.removeEventListener('resize', updateOrientation);
+
+    // デバウンス処理（150ms）を適用
+    const debouncedUpdate = debounce(updateOrientation, 150);
+    window.addEventListener('resize', debouncedUpdate);
+
+    return () => {
+      window.removeEventListener('resize', debouncedUpdate);
+    };
   }, []);
 
   return orientation;
@@ -93,8 +106,14 @@ export const useViewportSize = () => {
     };
 
     updateViewportSize();
-    window.addEventListener('resize', updateViewportSize);
-    return () => window.removeEventListener('resize', updateViewportSize);
+
+    // デバウンス処理（150ms）を適用
+    const debouncedUpdate = debounce(updateViewportSize, 150);
+    window.addEventListener('resize', debouncedUpdate);
+
+    return () => {
+      window.removeEventListener('resize', debouncedUpdate);
+    };
   }, []);
 
   return viewportSize;
