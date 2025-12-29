@@ -1,0 +1,10 @@
+{
+  "name": "ml-integration",
+  "description": "機械学習統合の研究調査 - Gobbletゲームに機械学習を導入するための調査と提案",
+  "language": "ja",
+  "status": "research",
+  "created": "2025-12-29",
+  "files": {
+    "research": "research.md"
+  }
+}
