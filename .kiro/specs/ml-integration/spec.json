@@ -5,6 +5,7 @@
   "status": "research",
   "created": "2025-12-29",
   "files": {
-    "research": "research.md"
+    "research": "research.md",
+    "executive-summary": "executive-summary.md"
   }
 }
